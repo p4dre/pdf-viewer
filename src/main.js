@@ -1,6 +1,7 @@
 "use strict";
 import { useState, useEffect, useLayoutEffect, useMemo, useCallback, useRef, createElement, createContext, useContext, Fragment, useReducer } from "react";
 import * as PdfJsApi from "pdfjs-dist/build/pdf";
+import CanvasLayer from "./canvasLayer";
 import { defaultLayoutPlugin } from "./layout";
 
 // const defaultLayoutPluginInstance = defaultLayoutPlugin();
@@ -3174,99 +3175,6 @@ var roundToDivide = function (a, b) {
 };
 
 var MAX_CANVAS_SIZE = 4096 * 4096;
-var CanvasLayer = function (_a) {
-  var canvasLayerRef = _a.canvasLayerRef,
-    height = _a.height,
-    page = _a.page,
-    pageIndex = _a.pageIndex,
-    plugins = _a.plugins,
-    rotation = _a.rotation,
-    scale = _a.scale,
-    width = _a.width,
-    onRenderCanvasCompleted = _a.onRenderCanvasCompleted;
-  var renderTask = useRef();
-  useIsomorphicLayoutEffect(function () {
-    var task = renderTask.current;
-    if (task) {
-      task.cancel();
-    }
-    var canvasEle = canvasLayerRef.current;
-    canvasEle.removeAttribute("data-testid");
-    plugins.forEach(function (plugin) {
-      if (plugin.onCanvasLayerRender) {
-        plugin.onCanvasLayerRender({
-          ele: canvasEle,
-          pageIndex: pageIndex,
-          rotation: rotation,
-          scale: scale,
-          status: LayerRenderStatus.PreRender,
-        });
-      }
-    });
-    var viewport = page.getViewport({
-      rotation: rotation,
-      scale: scale,
-    });
-    var outputScale = window.devicePixelRatio || 1;
-    var maxScale = Math.sqrt(MAX_CANVAS_SIZE / (viewport.width * viewport.height));
-    var shouldScaleByCSS = outputScale > maxScale;
-    shouldScaleByCSS ? (canvasEle.style.transform = "scale(1, 1)") : canvasEle.style.removeProperty("transform");
-    var possibleScale = Math.min(maxScale, outputScale);
-    var _a = floatToRatio(possibleScale, 8),
-      x = _a[0],
-      y = _a[1];
-    canvasEle.width = roundToDivide(viewport.width * possibleScale, x);
-    canvasEle.height = roundToDivide(viewport.height * possibleScale, x);
-    canvasEle.style.width = "".concat(roundToDivide(viewport.width, y), "px");
-    canvasEle.style.height = "".concat(roundToDivide(viewport.height, y), "px");
-    canvasEle.hidden = true;
-    var canvasContext = canvasEle.getContext("2d", { alpha: false });
-    var transform = shouldScaleByCSS || outputScale !== 1 ? [possibleScale, 0, 0, possibleScale, 0, 0] : null;
-    renderTask.current = page.render({
-      canvasContext: canvasContext,
-      transform: transform,
-      viewport: viewport,
-    });
-    renderTask.current.promise.then(
-      function () {
-        canvasEle.hidden = false;
-        canvasEle.setAttribute("data-testid", "core__canvas-layer-".concat(pageIndex));
-        plugins.forEach(function (plugin) {
-          if (plugin.onCanvasLayerRender) {
-            plugin.onCanvasLayerRender({
-              ele: canvasEle,
-              pageIndex: pageIndex,
-              rotation: rotation,
-              scale: scale,
-              status: LayerRenderStatus.DidRender,
-            });
-          }
-        });
-        onRenderCanvasCompleted();
-      },
-      function () {
-        onRenderCanvasCompleted();
-      }
-    );
-    return function () {
-      if (canvasEle) {
-        canvasEle.width = 0;
-        canvasEle.height = 0;
-      }
-    };
-  }, []);
-  return createElement(
-    "div",
-    {
-      className: "rpv-core__canvas-layer",
-      style: {
-        height: "".concat(height, "px"),
-        width: "".concat(width, "px"),
-      },
-    },
-    createElement("canvas", { ref: canvasLayerRef })
-  );
-};
 
 var SvgLayer = function (_a) {
   var height = _a.height,
@@ -3413,7 +3321,14 @@ var PageLayer = function (props) {
     });
   };
   const defaultPageRenderer = (props) => {
-    return createElement(Fragment, null, props.canvasLayer.children, props.textLayer.children, props.annotationLayer.children);
+    return (
+      <>
+        {props.canvasLayer.children}
+        {props.textLayer.children}
+        {props.annotationLayer.children}
+      </>
+    );
+    // return createElement(Fragment, null, props.canvasLayer.children, props.textLayer.children, props.annotationLayer.children);
   };
   const renderPageLayer = renderPage || defaultPageRenderer;
   const handleRenderCanvasCompleted = () => {
@@ -3464,32 +3379,11 @@ var PageLayer = function (props) {
           {renderPageLayer({
             annotationLayer: {
               attrs: {},
-              children: createElement(AnnotationLayer, {
-                doc: doc,
-                outlines: outlines,
-                page: page,
-                pageIndex: pageIndex,
-                plugins: plugins,
-                rotation: rotationValue,
-                scale: scale,
-                onExecuteNamedAction: onExecuteNamedAction,
-                onJumpFromLinkAnnotation: onJumpFromLinkAnnotation,
-                onJumpToDest: onJumpToDest,
-              }),
+              children: <AnnotationLayer doc={doc} outlines={outlines} page={page} pageIndex={pageIndex} plugins={plugins} rotation={rotationValue} scale={scale} onExecuteNamedAction={onExecuteNamedAction} onJumpFromLinkAnnotation={onJumpFromLinkAnnotation} onJumpToDest={onJumpToDest} />,
             },
             canvasLayer: {
               attrs: {},
-              children: createElement(CanvasLayer, {
-                canvasLayerRef: canvasLayerRef,
-                height: h,
-                page: page,
-                pageIndex: pageIndex,
-                plugins: plugins,
-                rotation: rotationValue,
-                scale: scale,
-                width: w,
-                onRenderCanvasCompleted: handleRenderCanvasCompleted,
-              }),
+              children: <CanvasLayer canvasLayerRef={canvasLayerRef} height={h} width={w} page={page} pageIndex={pageIndex} plugins={plugins} rotation={rotationValue} scale={scale} onRenderCanvasCompleted={handleRenderCanvasCompleted} />,
             },
             canvasLayerRendered: canvasLayerRendered,
             doc: doc,
@@ -3499,25 +3393,11 @@ var PageLayer = function (props) {
             scale: scale,
             svgLayer: {
               attrs: {},
-              children: createElement(SvgLayer, {
-                height: h,
-                page: page,
-                rotation: rotationValue,
-                scale: scale,
-                width: w,
-              }),
+              children: <SvgLayer width={w} height={h} page={page} rotation={rotationValue} scale={scale} />,
             },
             textLayer: {
               attrs: {},
-              children: createElement(TextLayer, {
-                containerRef: textLayerRef,
-                page: page,
-                pageIndex: pageIndex,
-                plugins: plugins,
-                rotation: rotationValue,
-                scale: scale,
-                onRenderTextCompleted: handleRenderTextCompleted,
-              }),
+              children: <TextLayer containerRef={textLayerRef} page={page} pageIndex={pageIndex} plugins={plugins} rotation={rotationValue} scale={scale} onRenderTextCompleted={handleRenderTextCompleted} />,
             },
             textLayerRendered: textLayerRendered,
             width: w,
@@ -3561,27 +3441,23 @@ var rectReducer = function (state, action) {
   var rect = action.rect;
   return state.height !== rect.height || state.width !== rect.width ? rect : state;
 };
-var useMeasureRect = function (_a) {
-  var elementRef = _a.elementRef;
-  var _b = useState(elementRef.current),
-    element = _b[0],
-    setElement = _b[1];
-  var initializedRectRef = useRef(false);
-  var _c = useReducer(rectReducer, { height: 0, width: 0 }),
-    rect = _c[0],
-    dispatch = _c[1];
-  useIsomorphicLayoutEffect(function () {
+var useMeasureRect = function (props) {
+  const elementRef = props.elementRef;
+  const [element, setElement] = useState(elementRef.current);
+  const initializedRectRef = useRef(false);
+  const [rect, dispatch] = useReducer(rectReducer, { height: 0, width: 0 });
+  useLayoutEffect(function () {
     if (elementRef.current !== element) {
       setElement(elementRef.current);
     }
   });
-  useIsomorphicLayoutEffect(
+  useLayoutEffect(
     function () {
       if (element && !initializedRectRef.current) {
         initializedRectRef.current = true;
         var _a = element.getBoundingClientRect(),
-          height = _a.height,
-          width = _a.width;
+          height = props.height,
+          width = props.width;
         dispatch({
           rect: { height: height, width: width },
         });
@@ -3598,8 +3474,8 @@ var useMeasureRect = function (_a) {
         entries.forEach(function (entry) {
           if (entry.target === element) {
             var _a = entry.contentRect,
-              height = _a.height,
-              width = _a.width;
+              height = props.height,
+              width = props.width;
             dispatch({
               rect: { height: height, width: width },
             });

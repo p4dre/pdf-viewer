@@ -50,22 +50,14 @@ var ThumbnailIcon = function () {
 
 var TOOLTIP_OFFSET_LTR = { left: 8, top: 0 };
 var TOOLTIP_OFFSET_RTL = { left: -8, top: 0 };
-var Sidebar = function (_a) {
-  var attachmentTabContent = _a.attachmentTabContent,
-    bookmarkTabContent = _a.bookmarkTabContent,
-    store = _a.store,
-    thumbnailTabContent = _a.thumbnailTabContent,
-    tabs = _a.tabs;
-  var containerRef = useRef();
-  var l10n = useContext(main.LocalizationContext).l10n;
-  var _b = useState(store.get("isCurrentTabOpened") || false),
-    opened = _b[0],
-    setOpened = _b[1];
-  var _c = useState(Math.max(store.get("currentTab") || 0, 0)),
-    currentTab = _c[0],
-    setCurrentTab = _c[1];
-  var direction = useContext(main.ThemeContext).direction;
-  var isRtl = direction === main.TextDirection.RightToLeft;
+var Sidebar = function (props) {
+  const { attachmentTabContent, bookmarkTabContent, store, thumbnailTabContent, tabs } = props;
+  const containerRef = useRef();
+  const l10n = useContext(main.LocalizationContext).l10n;
+  const [opened, setOpened] = useState(store.get("isCurrentTabOpened") || false);
+  const [currentTab, setCurrentTab] = useState(Math.max(store.get("currentTab") || 0, 0));
+  const direction = useContext(main.ThemeContext).direction;
+  const isRtl = direction === main.TextDirection.RightToLeft;
   var resizeConstrain = function (size) {
     return size.firstHalfPercentage >= 20 && size.firstHalfPercentage <= 80;
   };
@@ -121,6 +113,19 @@ var Sidebar = function (_a) {
   if (listTabs.length === 0) {
     return createElement(Fragment, null);
   }
+  // return (
+  //   <>
+  //     <div ref={containerRef} className={`rpv-default-layout__sidebar ${opened ? "rpv-default-layout__sidebar--opened" : ""} ${!isRtl ? "rpv-default-layout__sidebar--ltr" : ""} ${isRtl ? "rpv-default-layout__sidebar--ltr" : ""}`}>
+  //       <div className="rpv-default-layout__sidebar-tabs">
+  //         <div className="rpv-default-layout__sidebar-headers" role="tablist" aria-orientation="vertical">
+  //           {listTabs.map((tab, index) => {
+  //             return <div aria-controls="rpv-default-layout__sidebar-content" aria-selected={currentTab === index} key={index} className="rpv-default-layout__sidebar-header" id={`rpv-default-layout__sidebar-tab-${index}`} role="tab"></div>;
+  //           })}
+  //         </div>
+  //       </div>
+  //     </div>
+  //   </>
+  // );
   return createElement(
     Fragment,
     null,
@@ -190,7 +195,7 @@ var Sidebar = function (_a) {
   );
 };
 
-var useLayoutPlugin = function (props) {
+var useOptions = function (props) {
   var store = useMemo(function () {
     return main.createStore({
       isCurrentTabOpened: false,
@@ -200,7 +205,7 @@ var useLayoutPlugin = function (props) {
   var attachmentPluginInstance = attachment.useAttachmentPlugin();
   var bookmarkPluginInstance = bookmark.useBookmarkPlugin();
   var thumbnailPluginInstance = thumbnail.useThumbnailPlugin(props ? props.useThumbnailPlugin : {});
-  var toolbarPluginInstance = toolbar.useToolbarPlugin(props ? props.useToolbarPlugin : {});
+  var toolbarPluginInstance = toolbar.useToolbarPlugin(props ? props.useToolbarPlugin : { test: true });
   var Attachments = attachmentPluginInstance.Attachments;
   var Bookmarks = bookmarkPluginInstance.Bookmarks;
   var Thumbnails = thumbnailPluginInstance.Thumbnails;
@@ -243,7 +248,6 @@ var useLayoutPlugin = function (props) {
       );
     },
     renderViewer: function (renderProps) {
-      console.log("renderViewer ", renderProps);
       var slot = renderProps.slot;
       plugins.forEach(function (plugin) {
         if (plugin.renderViewer) {
@@ -259,6 +263,21 @@ var useLayoutPlugin = function (props) {
               style: slot.subSlot.attrs.style,
             }
           : {};
+      // slot.children = (
+      //   <div className="rpv-default-layout__container">
+      //     <div classNames={`rpv-default-layout__main ${renderProps.themeContext.direction === main.TextDirection.RightToLeft ? "rpv-default-layout__main--rtl" : ""}`}>
+      //       <Sidebar attachmentTabContent={<Attachments />} bookmarkTabContent={<Bookmarks />} thumbnailTabContent={<Thumbnails />} store={store} tabs={sidebarTabs}></Sidebar>
+      //       <div className="rpv-default-layout__body">
+      //         <div className="rpv-default-layout__toolbar">{props.renderToolbar ? props.renderToolbar(Toolbar) : <Toolbar />}</div>
+      //         <div {...mergeSubSlot}>{slot.subSlot.children}</div>
+      //       </div>
+      //     </div>
+      //     {slot.children}
+      //   </div>
+      // );
+      const oldProps = mergeSubSlot;
+      const newProps = __assign({}, mergeSubSlot);
+
       slot.children = createElement(
         "div",
         { className: "rpv-default-layout__container" },
@@ -275,7 +294,11 @@ var useLayoutPlugin = function (props) {
           createElement(
             "div",
             { className: "rpv-default-layout__body", "data-testid": "default-layout__body" },
-            createElement("div", { className: "rpv-default-layout__toolbar" }, props && props.renderToolbar ? props.renderToolbar(Toolbar) : createElement(Toolbar, null)),
+            createElement(
+              "div",
+              { className: "rpv-default-layout__toolbar" },
+              props && props.renderToolbar ? props.renderToolbar(Toolbar) : createElement(Toolbar, { switchTheme: props.theme, fullScreen: props.fullScreen, openFile: props.openFile, downloadFile: props.downloadFile, printFile: props.printFile })
+            ),
             createElement("div", __assign({}, mergeSubSlot), slot.subSlot.children)
           )
         ),
@@ -356,4 +379,4 @@ var setInitialTabFromPageMode = function (doc) {
   });
 };
 
-export { BookmarkIcon, FileIcon, ThumbnailIcon, useLayoutPlugin, setInitialTabFromPageMode };
+export { BookmarkIcon, FileIcon, ThumbnailIcon, useOptions, setInitialTabFromPageMode };

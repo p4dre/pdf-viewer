@@ -106,7 +106,7 @@ var __assign = function () {
 };
 
 var renderDefaultToolbar = function (transformToolbarSlot) {
-  return function (defaultToolbarSlot) {
+  return function (defaultToolbarSlot, props) {
     var toolbarSlot = useMemo(function () {
       return transformToolbarSlot(defaultToolbarSlot);
     }, []);
@@ -125,42 +125,88 @@ var renderDefaultToolbar = function (transformToolbarSlot) {
       Zoom = toolbarSlot.Zoom,
       ZoomIn = toolbarSlot.ZoomIn,
       ZoomOut = toolbarSlot.ZoomOut;
-    return createElement(
-      "div",
-      {
-        "data-testid": "toolbar",
-        className: main.classNames({
-          "rpv-toolbar": true,
-          "rpv-toolbar--rtl": isRtl,
-        }),
-        role: "toolbar",
-        "aria-orientation": "horizontal",
-      },
-      createElement(
-        "div",
-        { className: "rpv-toolbar__left" },
-        createElement("div", { className: "rpv-toolbar__item" }, createElement(ShowSearchPopover, null)),
-        createElement("div", { className: "rpv-core__display--hidden rpv-core__display--block-small" }, createElement("div", { className: "rpv-toolbar__item" }, createElement(GoToPreviousPage, null))),
-        createElement("div", { className: "rpv-toolbar__item" }, createElement(CurrentPageInput, null), createElement("span", { className: "rpv-toolbar__label" }, createElement(NumberOfPages, null))),
-        createElement("div", { className: "rpv-core__display--hidden rpv-core__display--block-small" }, createElement("div", { className: "rpv-toolbar__item" }, createElement(GoToNextPage, null)))
-      ),
-      createElement(
-        "div",
-        { className: "rpv-toolbar__center" },
-        createElement("div", { className: "rpv-toolbar__item" }, createElement(ZoomOut, null)),
-        createElement("div", { className: "rpv-core__display--hidden rpv-core__display--block-small" }, createElement("div", { className: "rpv-toolbar__item" }, createElement(Zoom, null))),
-        createElement("div", { className: "rpv-toolbar__item" }, createElement(ZoomIn, null))
-      ),
-      createElement(
-        "div",
-        { className: "rpv-toolbar__right" },
-        createElement("div", { className: "rpv-core__display--hidden rpv-core__display--block-medium" }, createElement("div", { className: "rpv-toolbar__item" }, createElement(SwitchTheme, null))),
-        createElement("div", { className: "rpv-core__display--hidden rpv-core__display--block-medium" }, createElement("div", { className: "rpv-toolbar__item" }, createElement(EnterFullScreen, null))),
-        createElement("div", { className: "rpv-core__display--hidden rpv-core__display--block-medium" }, createElement("div", { className: "rpv-toolbar__item" }, createElement(Open, null))),
-        createElement("div", { className: "rpv-core__display--hidden rpv-core__display--block-medium" }, createElement("div", { className: "rpv-toolbar__item" }, createElement(Download, null))),
-        createElement("div", { className: "rpv-core__display--hidden rpv-core__display--block-medium" }, createElement("div", { className: "rpv-toolbar__item" }, createElement(Print, null))),
-        createElement("div", { className: "rpv-toolbar__item" }, createElement(MoreActionsPopover, { toolbarSlot: toolbarSlot }))
-      )
+    return (
+      <div role="toolbar" aria-orientation="horizontal" className={`rpv-toolbar ${isRtl ? "rpv-toolbar--rtl" : ""}`}>
+        <div className="rpv-toolbar__left">
+          <div className="rpv-toolbar__item">
+            <ShowSearchPopover />
+          </div>
+          <div className="rpv-core__display--hidden rpv-core__display--block-small">
+            <div className="rpv-toolbar__item">
+              <GoToPreviousPage />
+            </div>
+          </div>
+          <div className="rpv-toolbar__item">
+            <CurrentPageInput />
+            <span>
+              <NumberOfPages />
+            </span>
+          </div>
+          <div className="rpv-core__display--hidden rpv-core__display--block-small">
+            <div className="rpv-toolbar__item">
+              <GoToNextPage />
+            </div>
+          </div>
+        </div>
+        <div className="rpv-toolbar__center">
+          <div className="rpv-toolbar__item">
+            <ZoomOut />
+          </div>
+          <div className="rpv-core__display--hidden rpv-core__display--block-small">
+            <div className="rpv-toolbar__item">
+              <Zoom />
+            </div>
+          </div>
+          <div className="rpv-toolbar__item">
+            <ZoomIn />
+          </div>
+        </div>
+        <div className="rpv-toolbar__right">
+          {props.switchTheme ? (
+            <div className="rpv-core__display--hidden rpv-core__display--block-medium">
+              <div className="rpv-toolbar__item">
+                <SwitchTheme />
+              </div>
+            </div>
+          ) : null}
+
+          {props.fullScreen ? (
+            <div className="rpv-core__display--hidden rpv-core__display--block-medium">
+              <div className="rpv-toolbar__item">
+                <EnterFullScreen />
+              </div>
+            </div>
+          ) : null}
+
+          {props.openFile ? (
+            <div className="rpv-core__display--hidden rpv-core__display--block-medium">
+              <div className="rpv-toolbar__item">
+                <Open />
+              </div>
+            </div>
+          ) : null}
+
+          {props.downloadFile ? (
+            <div className="rpv-core__display--hidden rpv-core__display--block-medium">
+              <div className="rpv-toolbar__item">
+                <Download />
+              </div>
+            </div>
+          ) : null}
+
+          {props.printFile ? (
+            <div className="rpv-core__display--hidden rpv-core__display--block-medium">
+              <div className="rpv-toolbar__item">
+                <Print />
+              </div>
+            </div>
+          ) : null}
+
+          <div className="rpv-toolbar__item">
+            <MoreActionsPopover toolbarSlot={toolbarSlot} />
+          </div>
+        </div>
+      </div>
     );
   };
 };
@@ -173,15 +219,14 @@ var defaultTransform = function (slot) {
     },
   });
 };
-var DefaultToobar = function (toolbarSlot) {
-  return renderDefaultToolbar(defaultTransform)(toolbarSlot);
+var DefaultToobar = function (toolbarSlot, props) {
+  return renderDefaultToolbar(defaultTransform)(toolbarSlot, props);
 };
 
-var Toolbar = function (_a) {
-  var children = _a.children,
-    slot = _a.slot;
-  var render = children || DefaultToobar;
-  return render(slot);
+var Toolbar = function (props) {
+  const { children, slot } = props;
+  var render = DefaultToobar;
+  return render(slot, props);
 };
 
 var useToolbarPlugin = function (props) {
