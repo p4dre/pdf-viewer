@@ -1,5 +1,16 @@
 import { useState, useEffect, useRef, useMemo, createElement, useContext, Fragment } from "react";
 import { createPortal } from "react-dom";
+import Icon from "../../../Icon";
+import LocalizationContext from "../../../LocalizationContext";
+import ThemeContext from "../../../ThemeContext";
+import { isMac, createStore, getPage } from "../../../utils";
+import Tooltip from "../../../Tooltip";
+import { Position, TextDirection } from "../../../enums";
+import MinimalButton from "../../../MinimalButton";
+import MenuItem from "../../../MenuItem";
+import useIsMounted from "../../../hooks/useIsMounted";
+import Modal from "../../../Modal";
+import Button from "../../../Button";
 
 import * as main from "../../../main";
 
@@ -74,7 +85,7 @@ var getOddPagesNumbers = function (doc) {
 
 var PrintIcon = function () {
   return createElement(
-    main.Icon,
+    Icon,
     { size: 16 },
     createElement("path", {
       d: "M7.5,19.499h9 M7.5,16.499h9 M5.5,16.5h-3c-1.103-0.003-1.997-0.897-2-2v-6c0.003-1.103,0.897-1.997,2-2h19\n            c1.103,0.003,1.997,0.897,2,2v6c-0.003,1.103-0.897,1.997-2,2h-3\n            M5.5,4.5v-4h9.586c0.265,0,0.52,0.105,0.707,0.293l2.414,2.414\n            C18.395,3.394,18.5,3.649,18.5,3.914V4.5\n            M18.5,22.5c0,0.552-0.448,1-1,1h-11c-0.552,0-1-0.448-1-1v-9h13V22.5z\n            M3.5,8.499\n            c0.552,0,1,0.448,1,1s-0.448,1-1,1s-1-0.448-1-1S2.948,8.499,3.5,8.499z\n            M14.5,0.499v4h4",
@@ -99,13 +110,13 @@ var TOOLTIP_OFFSET = { left: 0, top: 8 };
 var PrintButton = function (_a) {
   var enableShortcuts = _a.enableShortcuts,
     onClick = _a.onClick;
-  var l10n = useContext(main.LocalizationContext).l10n;
+  var l10n = useContext(LocalizationContext).l10n;
   var label = l10n && l10n.print ? l10n.print.print : "Print";
-  var ariaKeyShortcuts = enableShortcuts ? (main.isMac() ? "Meta+P" : "Ctrl+P") : "";
-  return createElement(main.Tooltip, {
+  var ariaKeyShortcuts = enableShortcuts ? (isMac() ? "Meta+P" : "Ctrl+P") : "";
+  return createElement(Tooltip, {
     ariaControlsSuffix: "print",
-    position: main.Position.BottomCenter,
-    target: createElement(main.MinimalButton, { ariaKeyShortcuts: ariaKeyShortcuts, ariaLabel: label, testId: "print__button", onClick: onClick }, createElement(PrintIcon, null)),
+    position: Position.BottomCenter,
+    target: createElement(MinimalButton, { ariaKeyShortcuts: ariaKeyShortcuts, ariaLabel: label, testId: "print__button", onClick: onClick }, createElement(PrintIcon, null)),
     content: function () {
       return label;
     },
@@ -141,7 +152,7 @@ var PERMISSION_PRINT_HIGHT_QUALITY = 2048;
 var CheckPrintPermission = function (_a) {
   var doc = _a.doc,
     store = _a.store;
-  var l10n = main(main.LocalizationContext).l10n;
+  var l10n = main(LocalizationContext).l10n;
   var _b = useState(true),
     isAllowed = _b[0],
     setIsAllowed = _b[1];
@@ -153,7 +164,7 @@ var CheckPrintPermission = function (_a) {
   }, []);
   return isAllowed
     ? createElement(Fragment, null)
-    : createElement(main.Modal, {
+    : createElement(Modal, {
         ariaControlsSuffix: "print-permission",
         closeOnClickOutside: false,
         closeOnEscape: false,
@@ -166,36 +177,44 @@ var CheckPrintPermission = function (_a) {
             Fragment,
             null,
             createElement("div", { className: "rpv-print__permission-body" }, l10n && l10n.print ? l10n.print.disallowPrint : "The document does not allow to print"),
-            createElement("div", { className: "rpv-print__permission-footer" }, createElement(main.Button, { onClick: close }, l10n && l10n.print ? l10n.print.close : "Close"))
+            createElement("div", { className: "rpv-print__permission-footer" }, createElement(Button, { onClick: close }, l10n && l10n.print ? l10n.print.close : "Close"))
           );
         },
         isOpened: true,
       });
 };
 
+const ProgressBar = function (_a) {
+  var progress = _a.progress;
+  var direction = useContext(ThemeContext).direction;
+  var isRtl = direction === TextDirection.RightToLeft;
+  return (
+    <div className={`rpv-core__progress-bar ${isRtl ? "rpv-core__progress-bar--rtl" : ""}`}>
+      <div className={`rpv-core__progress-bar-progress`} style={{ width: `${progress}%` }}>
+        {progress}%
+      </div>
+    </div>
+  );
+};
+
 var PrintProgress = function (_a) {
   var numLoadedPages = _a.numLoadedPages,
     numPages = _a.numPages,
     onCancel = _a.onCancel;
-  var l10n = main.LocalizationContext.l10n;
-  var direction = main.ThemeContext.direction;
-  var isRtl = direction === main.TextDirection.RightToLeft;
+  var l10n = LocalizationContext.l10n;
+  var direction = ThemeContext.direction;
+  var isRtl = direction === TextDirection.RightToLeft;
   var progress = Math.floor((numLoadedPages * 100) / numPages);
-  return createElement(
-    "div",
-    { className: "rpv-print__progress" },
-    createElement(
-      "div",
-      {
-        className: main.classNames({
-          "rpv-print__progress-body": true,
-          "rpv-print__progress-body--rtl": isRtl,
-        }),
-      },
-      createElement("div", { className: "rpv-print__progress-message" }, l10n && l10n.print ? l10n.print.preparingDocument : "Preparing document ..."),
-      createElement("div", { className: "rpv-print__progress-bar" }, createElement(main.ProgressBar, { progress: progress })),
-      createElement(main.Button, { onClick: onCancel }, l10n && l10n.print ? l10n.print.cancel : "Cancel")
-    )
+  return (
+    <div className="rpv-print__progress">
+      <div className={`rpv-print__progress-body ${isRtl ? "rpv-print__progress-body--rtl" : ""}`}>
+        <div className="rpv-print__progress-message">{l10n && l10n.print ? l10n.print.preparingDocument : "Preparing document ..."}</div>
+        <div className="rpv-print__progress-bar">
+          <ProgressBar progress={progress} />
+        </div>
+        <Button onClick={onCancel}>{l10n && l10n.print ? l10n.print.cancel : "Cancel"}</Button>
+      </div>
+    </div>
   );
 };
 
@@ -211,7 +230,7 @@ var PageThumbnail = function (_a) {
     pageWidth = _a.pageWidth,
     rotation = _a.rotation,
     onLoad = _a.onLoad;
-  var isMounted = main.useIsMounted();
+  var isMounted = useIsMounted();
   var renderTask = useRef();
   var _b = useState(""),
     src = _b[0],
@@ -271,7 +290,7 @@ var PageThumbnailContainer = function (_a) {
     rotation = _a.rotation,
     shouldRender = _a.shouldRender,
     onLoad = _a.onLoad;
-  var isMounted = main.useIsMounted();
+  var isMounted = useIsMounted();
   var _b = useState(null),
     page = _b[0],
     setPage = _b[1];
@@ -279,7 +298,7 @@ var PageThumbnailContainer = function (_a) {
   useEffect(
     function () {
       if (shouldRender) {
-        main.getPage(doc, pageIndex).then(function (pdfPage) {
+        getPage(doc, pageIndex).then(function (pdfPage) {
           isMounted.current && setPage(pdfPage);
         });
       }
@@ -430,9 +449,9 @@ var PrintContainer = function (_a) {
 
 var PrintMenuItem = function (_a) {
   var onClick = _a.onClick;
-  var l10n = main.LocalizationContext.l10n;
+  var l10n = LocalizationContext.l10n;
   var label = l10n && l10n.print ? l10n.print.print : "Print";
-  return createElement(main.MenuItem, { icon: createElement(PrintIcon, null), testId: "print__menu", onClick: onClick }, label);
+  return createElement(MenuItem, { icon: createElement(PrintIcon, null), testId: "print__menu", onClick: onClick }, label);
 };
 
 var ShortcutHandler = function (_a) {
@@ -442,7 +461,7 @@ var ShortcutHandler = function (_a) {
     if (e.shiftKey || e.altKey || e.key !== "p") {
       return;
     }
-    var isCommandPressed = main.isMac() ? e.metaKey : e.ctrlKey;
+    var isCommandPressed = isMac() ? e.metaKey : e.ctrlKey;
     if (!isCommandPressed) {
       return;
     }
@@ -487,7 +506,7 @@ var usePrintPlugin = function (props) {
     );
   }, []);
   var store = useMemo(function () {
-    return main.createStore({
+    return createStore({
       printStatus: PrintStatus.Inactive,
     });
   }, []);

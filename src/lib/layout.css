@@ -1220,11 +1220,11 @@
   display: flex;
 }
 .rpv-toolbar__center {
-  align-items: center;
+  /* align-items: center; */
   display: flex;
   flex-grow: 1;
   flex-shrink: 1;
-  justify-content: center;
+  /* justify-content: center; */
 }
 .rpv-toolbar__right {
   align-items: center;
@@ -1271,7 +1271,7 @@
 }
 .rpv-default-layout__toolbar {
   align-items: center;
-  background-color: var(--rpv-default-layout__toolbar-background-color);
+  background-color: white;
   border-bottom: 1px solid var(--rpv-default-layout__toolbar-border-bottom-color);
   display: flex;
   left: 0;
@@ -1333,7 +1333,7 @@
   width: 100%;
 }
 .rpv-default-layout__sidebar-headers {
-  background-color: var(--rpv-default-layout__sidebar-headers-background-color);
+  background-color: white;
   padding: 0.25rem;
 }
 .rpv-default-layout__sidebar-header {

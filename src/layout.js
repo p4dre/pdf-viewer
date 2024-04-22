@@ -1,13 +1,65 @@
 import { useState, useEffect, useRef, Fragment, useMemo, useContext, createElement } from "react";
-import * as main from "./main";
 import * as attachment from "./pdf/components/attachments";
 import * as bookmark from "./pdf/components/bookmark";
 import * as thumbnail from "./pdf/components/thumbnail";
 import * as toolbar from "./pdf/components/toolbar";
+import LocalizationContext from "./LocalizationContext";
+import ThemeContext from "./ThemeContext";
+import { PageMode, TextDirection, Position } from "./enums";
+import Tooltip from "./Tooltip";
+import MinimalButton from "./MinimalButton";
+import Icon from "./Icon";
+
+var classNames = function (classes) {
+  var result = [];
+  Object.keys(classes).forEach(function (clazz) {
+    if (clazz && classes[clazz]) {
+      result.push(clazz);
+    }
+  });
+  return result.join(" ");
+};
+
+function createStore(initialState) {
+  var state = initialState || {};
+  var listeners = {};
+  var update = function (key, data) {
+    var _a;
+    state = __assign(__assign({}, state), ((_a = {}), (_a[key] = data), _a));
+    (listeners[key] || []).forEach(function (handler) {
+      return handler(state[key]);
+    });
+  };
+  var get = function (key) {
+    return state[key];
+  };
+  return {
+    subscribe: function (key, handler) {
+      listeners[key] = (listeners[key] || []).concat(handler);
+    },
+    unsubscribe: function (key, handler) {
+      listeners[key] = (listeners[key] || []).filter(function (f) {
+        return f !== handler;
+      });
+    },
+    update: function (key, data) {
+      update(key, data);
+    },
+    updateCurrentValue: function (key, updater) {
+      var currentValue = get(key);
+      if (currentValue !== undefined) {
+        update(key, updater(currentValue));
+      }
+    },
+    get: function (key) {
+      return get(key);
+    },
+  };
+}
 
 var BookmarkIcon = function () {
   return createElement(
-    main.Icon,
+    Icon,
     { size: 16 },
     createElement("path", {
       d: "M11.5,1.5h11c0.552,0,1,0.448,1,1v20c0,0.552-0.448,1-1,1h-21c-0.552,0-1-0.448-1-1v-20c0-0.552,0.448-1,1-1h3\n            M11.5,10.5c0,0.55-0.3,0.661-0.659,0.248L8,7.5l-2.844,3.246c-0.363,0.414-0.659,0.3-0.659-0.247v-9c0-0.552,0.448-1,1-1h5\n            c0.552,0,1,0.448,1,1L11.5,10.5z\n            M14.5,6.499h6\n            M14.5,10.499h6\n            M3.5,14.499h17\n            M3.5,18.499h16.497",
@@ -30,7 +82,7 @@ var __assign = function () {
 
 var FileIcon = function () {
   return createElement(
-    main.Icon,
+    Icon,
     { size: 16 },
     createElement("path", {
       d: "M7.618,15.345l8.666-8.666c0.78-0.812,2.071-0.838,2.883-0.058s0.838,2.071,0.058,2.883\n            c-0.019,0.02-0.038,0.039-0.058,0.058L7.461,21.305c-1.593,1.593-4.175,1.592-5.767,0s-1.592-4.175,0-5.767c0,0,0,0,0,0\n            L13.928,3.305c2.189-2.19,5.739-2.19,7.929-0.001s2.19,5.739,0,7.929l0,0L13.192,19.9",
@@ -40,7 +92,7 @@ var FileIcon = function () {
 
 var ThumbnailIcon = function () {
   return createElement(
-    main.Icon,
+    Icon,
     { size: 16 },
     createElement("path", {
       d: "M10.5,9.5c0,0.552-0.448,1-1,1h-8c-0.552,0-1-0.448-1-1v-8c0-0.552,0.448-1,1-1h8c0.552,0,1,0.448,1,1V9.5z\n            M23.5,9.5c0,0.552-0.448,1-1,1h-8c-0.552,0-1-0.448-1-1v-8c0-0.552,0.448-1,1-1h8c0.552,0,1,0.448,1,1V9.5z\n            M10.5,22.5 c0,0.552-0.448,1-1,1h-8c-0.552,0-1-0.448-1-1v-8c0-0.552,0.448-1,1-1h8c0.552,0,1,0.448,1,1V22.5z\n            M23.5,22.5c0,0.552-0.448,1-1,1 h-8c-0.552,0-1-0.448-1-1v-8c0-0.552,0.448-1,1-1h8c0.552,0,1,0.448,1,1V22.5z",
@@ -53,11 +105,11 @@ var TOOLTIP_OFFSET_RTL = { left: -8, top: 0 };
 var Sidebar = function (props) {
   const { attachmentTabContent, bookmarkTabContent, store, thumbnailTabContent, tabs } = props;
   const containerRef = useRef();
-  const l10n = useContext(main.LocalizationContext).l10n;
+  const l10n = useContext(LocalizationContext).l10n;
   const [opened, setOpened] = useState(store.get("isCurrentTabOpened") || false);
   const [currentTab, setCurrentTab] = useState(Math.max(store.get("currentTab") || 0, 0));
-  const direction = useContext(main.ThemeContext).direction;
-  const isRtl = direction === main.TextDirection.RightToLeft;
+  const direction = useContext(ThemeContext).direction;
+  const isRtl = direction === TextDirection.RightToLeft;
   var resizeConstrain = function (size) {
     return size.firstHalfPercentage >= 20 && size.firstHalfPercentage <= 80;
   };
@@ -133,7 +185,7 @@ var Sidebar = function (props) {
       "div",
       {
         "data-testid": "default-layout__sidebar",
-        className: main.classNames({
+        className: classNames({
           "rpv-default-layout__sidebar": true,
           "rpv-default-layout__sidebar--opened": opened,
           "rpv-default-layout__sidebar--ltr": !isRtl,
@@ -151,11 +203,11 @@ var Sidebar = function (props) {
             return createElement(
               "div",
               { "aria-controls": "rpv-default-layout__sidebar-content", "aria-selected": currentTab === index, key: index, className: "rpv-default-layout__sidebar-header", id: "rpv-default-layout__sidebar-tab-".concat(index), role: "tab" },
-              createElement(main.Tooltip, {
+              createElement(Tooltip, {
                 ariaControlsSuffix: "default-layout-sidebar-tab-".concat(index),
-                position: isRtl ? main.Position.LeftCenter : main.Position.RightCenter,
+                position: isRtl ? Position.LeftCenter : Position.RightCenter,
                 target: createElement(
-                  main.MinimalButton,
+                  MinimalButton,
                   {
                     ariaLabel: tab.title,
                     isSelected: currentTab === index,
@@ -178,7 +230,7 @@ var Sidebar = function (props) {
           {
             "aria-labelledby": "rpv-default-layout__sidebar-tab-".concat(currentTab),
             id: "rpv-default-layout__sidebar-content",
-            className: main.classNames({
+            className: classNames({
               "rpv-default-layout__sidebar-content": true,
               "rpv-default-layout__sidebar-content--opened": opened,
               "rpv-default-layout__sidebar-content--ltr": !isRtl,
@@ -191,13 +243,100 @@ var Sidebar = function (props) {
         )
       )
     ),
-    opened && createElement(main.Splitter, { constrain: resizeConstrain })
+    opened && createElement(Splitter, { constrain: resizeConstrain })
   );
+};
+
+var Splitter = function (_a) {
+  var constrain = _a.constrain;
+  var direction = useContext(ThemeContext).direction;
+  var isRtl = direction === TextDirection.RightToLeft;
+  var resizerRef = useRef();
+  var leftSideRef = useRef();
+  var rightSideRef = useRef();
+  var xRef = useRef(0);
+  var yRef = useRef(0);
+  var leftWidthRef = useRef(0);
+  var resizerWidthRef = useRef(0);
+  var eventOptions = {
+    capture: true,
+  };
+  var handleMouseMove = function (e) {
+    var resizerEle = resizerRef.current;
+    var leftSide = leftSideRef.current;
+    var rightSide = rightSideRef.current;
+    if (!resizerEle || !leftSide || !rightSide) {
+      return;
+    }
+    var resizerWidth = resizerWidthRef.current;
+    var dx = e.clientX - xRef.current;
+    var firstHalfSize = leftWidthRef.current + (isRtl ? -dx : dx);
+    var containerWidth = resizerEle.parentElement.getBoundingClientRect().width;
+    var firstHalfPercentage = (firstHalfSize * 100) / containerWidth;
+    resizerEle.classList.add("rpv-core__splitter--resizing");
+    if (constrain) {
+      var secondHalfSize = containerWidth - firstHalfSize - resizerWidth;
+      var secondHalfPercentage = (secondHalfSize * 100) / containerWidth;
+      if (
+        !constrain({
+          firstHalfPercentage: firstHalfPercentage,
+          firstHalfSize: firstHalfSize,
+          secondHalfPercentage: secondHalfPercentage,
+          secondHalfSize: secondHalfSize,
+        })
+      ) {
+        return;
+      }
+    }
+    leftSide.style.width = "".concat(firstHalfPercentage, "%");
+    document.body.classList.add("rpv-core__splitter-body--resizing");
+    leftSide.classList.add("rpv-core__splitter-sibling--resizing");
+    rightSide.classList.add("rpv-core__splitter-sibling--resizing");
+  };
+  var handleMouseUp = function (e) {
+    var resizerEle = resizerRef.current;
+    var leftSide = leftSideRef.current;
+    var rightSide = rightSideRef.current;
+    if (!resizerEle || !leftSide || !rightSide) {
+      return;
+    }
+    document.body.classList.remove("rpv-core__splitter-body--resizing");
+    resizerEle.classList.remove("rpv-core__splitter--resizing");
+    leftSide.classList.remove("rpv-core__splitter-sibling--resizing");
+    rightSide.classList.remove("rpv-core__splitter-sibling--resizing");
+    document.removeEventListener("mousemove", handleMouseMove, eventOptions);
+    document.removeEventListener("mouseup", handleMouseUp, eventOptions);
+  };
+  var handleMouseDown = function (e) {
+    var leftSide = leftSideRef.current;
+    if (!leftSide) {
+      return;
+    }
+    xRef.current = e.clientX;
+    yRef.current = e.clientY;
+    leftWidthRef.current = leftSide.getBoundingClientRect().width;
+    document.addEventListener("mousemove", handleMouseMove, eventOptions);
+    document.addEventListener("mouseup", handleMouseUp, eventOptions);
+  };
+  useEffect(function () {
+    var resizerEle = resizerRef.current;
+    if (!resizerEle) {
+      return;
+    }
+    resizerWidthRef.current = resizerEle.getBoundingClientRect().width;
+    leftSideRef.current = resizerEle.previousElementSibling;
+    rightSideRef.current = resizerEle.nextElementSibling;
+  }, []);
+  return createElement("div", {
+    ref: resizerRef,
+    className: "rpv-core__splitter",
+    onMouseDown: handleMouseDown,
+  });
 };
 
 var useOptions = function (props) {
   var store = useMemo(function () {
-    return main.createStore({
+    return createStore({
       isCurrentTabOpened: false,
       currentTab: 0,
     });
@@ -247,7 +386,8 @@ var useOptions = function (props) {
         })
       );
     },
-    renderViewer: function (renderProps) {
+    renderViewer: function (renderProps, param2) {
+      console.log("param2 ", param2);
       var slot = renderProps.slot;
       plugins.forEach(function (plugin) {
         if (plugin.renderViewer) {
@@ -263,46 +403,17 @@ var useOptions = function (props) {
               style: slot.subSlot.attrs.style,
             }
           : {};
-      // slot.children = (
-      //   <div className="rpv-default-layout__container">
-      //     <div classNames={`rpv-default-layout__main ${renderProps.themeContext.direction === main.TextDirection.RightToLeft ? "rpv-default-layout__main--rtl" : ""}`}>
-      //       <Sidebar attachmentTabContent={<Attachments />} bookmarkTabContent={<Bookmarks />} thumbnailTabContent={<Thumbnails />} store={store} tabs={sidebarTabs}></Sidebar>
-      //       <div className="rpv-default-layout__body">
-      //         <div className="rpv-default-layout__toolbar">{props.renderToolbar ? props.renderToolbar(Toolbar) : <Toolbar />}</div>
-      //         <div {...mergeSubSlot}>{slot.subSlot.children}</div>
-      //       </div>
-      //     </div>
-      //     {slot.children}
-      //   </div>
-      // );
-      const oldProps = mergeSubSlot;
-      const newProps = __assign({}, mergeSubSlot);
-
-      slot.children = createElement(
-        "div",
-        { className: "rpv-default-layout__container" },
-        createElement(
-          "div",
-          {
-            "data-testid": "default-layout__main",
-            className: main.classNames({
-              "rpv-default-layout__main": true,
-              "rpv-default-layout__main--rtl": renderProps.themeContext.direction === main.TextDirection.RightToLeft,
-            }),
-          },
-          createElement(Sidebar, { attachmentTabContent: createElement(Attachments, null), bookmarkTabContent: createElement(Bookmarks, null), store: store, thumbnailTabContent: createElement(Thumbnails, null), tabs: sidebarTabs }),
-          createElement(
-            "div",
-            { className: "rpv-default-layout__body", "data-testid": "default-layout__body" },
-            createElement(
-              "div",
-              { className: "rpv-default-layout__toolbar" },
-              props && props.renderToolbar ? props.renderToolbar(Toolbar) : createElement(Toolbar, { switchTheme: props.theme, fullScreen: props.fullScreen, openFile: props.openFile, downloadFile: props.downloadFile, printFile: props.printFile })
-            ),
-            createElement("div", __assign({}, mergeSubSlot), slot.subSlot.children)
-          )
-        ),
-        slot.children
+      slot.children = (
+        <div className="rpv-default-layout__container">
+          <div className={`rpv-default-layout__main ${renderProps.themeContext.direction === TextDirection.RightToLeft ? "rpv-default-layout__main--rtl" : ""}`}>
+            <Sidebar attachmentTabContent={<Attachments />} bookmarkTabContent={<Bookmarks />} thumbnailTabContent={<Thumbnails />} store={store} tabs={sidebarTabs}></Sidebar>
+            <div className="rpv-default-layout__body">
+              <div className="rpv-default-layout__toolbar">{props.renderToolbar ? props.renderToolbar(Toolbar) : <Toolbar {...props} />}</div>
+              <div {...mergeSubSlot}>{slot.subSlot.children}</div>
+            </div>
+          </div>
+          {slot.children}
+        </div>
       );
       slot.subSlot.attrs = {};
       slot.subSlot.children = createElement(Fragment, null);
@@ -361,13 +472,13 @@ var setInitialTabFromPageMode = function (doc) {
         resolve(-1);
       } else {
         switch (pageMode) {
-          case main.PageMode.Attachments:
+          case PageMode.Attachments:
             resolve(2);
             break;
-          case main.PageMode.Bookmarks:
+          case PageMode.Bookmarks:
             resolve(1);
             break;
-          case main.PageMode.Thumbnails:
+          case PageMode.Thumbnails:
             resolve(0);
             break;
           default:

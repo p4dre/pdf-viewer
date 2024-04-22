@@ -1,16 +1,26 @@
-import { useState, useEffect, useMemo, Fragment, useContext, createElement } from "react";
-import * as main from "../../../main";
+import { useState, useEffect, useLayoutEffect, useMemo, Fragment, useContext, createElement } from "react";
+import Icon from "../../../Icon";
+import useDebounceCallback from "../../../hooks/useDebounceCallback";
+import LocalizationContext from "../../../LocalizationContext";
+import ThemeContext from "../../../ThemeContext";
+import { isMac, createStore } from "../../../utils";
+import { SpecialZoomLevel, TextDirection, Position } from "../../../enums";
+import MinimalButton from "../../../MinimalButton";
+import MenuItem from "../../../MenuItem";
+import Tooltip from "../../../Tooltip";
+import Menu from "../../../Menu";
+import Popover from "../../../Popover";
 
-var ZoomInIcon = function () {
-  return createElement(
-    main.Icon,
-    { ignoreDirection: true, size: 16 },
-    createElement("path", { d: "M10.5,0.499c5.523,0,10,4.477,10,10s-4.477,10-10,10s-10-4.477-10-10S4.977,0.499,10.5,0.499z\n            M23.5,23.499\n            l-5.929-5.929\n            M5.5,10.499h10\n            M10.5,5.499v10" })
-  );
+const MenuDivider = function () {
+  return <div ariaOrientation="horizontal" role="separator" className="rpv-core__menu-divider"></div>;
 };
 
-var ZoomOutIcon = function () {
-  return createElement(main.Icon, { ignoreDirection: true, size: 16 }, createElement("path", { d: "M10.5,0.499c5.523,0,10,4.477,10,10s-4.477,10-10,10s-10-4.477-10-10S4.977,0.499,10.5,0.499z\n            M23.5,23.499\n            l-5.929-5.929\n            M5.5,10.499h10" }));
+const ZoomInIcon = function () {
+  return createElement(Icon, { ignoreDirection: true, size: 16 }, createElement("path", { d: "M10.5,0.499c5.523,0,10,4.477,10,10s-4.477,10-10,10s-10-4.477-10-10S4.977,0.499,10.5,0.499z\n            M23.5,23.499\n            l-5.929-5.929\n            M5.5,10.499h10\n            M10.5,5.499v10" }));
+};
+
+const ZoomOutIcon = function () {
+  return createElement(Icon, { ignoreDirection: true, size: 16 }, createElement("path", { d: "M10.5,0.499c5.523,0,10,4.477,10,10s-4.477,10-10,10s-10-4.477-10-10S4.977,0.499,10.5,0.499z\n            M23.5,23.499\n            l-5.929-5.929\n            M5.5,10.499h10" }));
 };
 
 var __assign = function () {
@@ -63,7 +73,7 @@ var createSvgElement = function () {
 var PinchZoom = function (_a) {
   var pagesContainerRef = _a.pagesContainerRef,
     store = _a.store;
-  var zoomTo = main.useDebounceCallback(function (scale) {
+  var zoomTo = useDebounceCallback(function (scale) {
     var zoom = store.get("zoom");
     if (zoom) {
       zoom(scale);
@@ -83,7 +93,7 @@ var PinchZoom = function (_a) {
     var matrix = createSvgElement().createSVGMatrix().translate(originX, originY).scale(scaleDiff).translate(-originX, -originY).scale(currentScale);
     zoomTo(matrix.a);
   };
-  main.useIsomorphicLayoutEffect(function () {
+  useLayoutEffect(function () {
     var pagesContainer = pagesContainerRef.current;
     if (!pagesContainer) {
       return;
@@ -117,7 +127,7 @@ var ShortcutHandler = function (_a) {
     if (e.shiftKey || e.altKey) {
       return;
     }
-    var isCommandPressed = main.isMac() ? e.metaKey : e.ctrlKey;
+    var isCommandPressed = isMac() ? e.metaKey : e.ctrlKey;
     if (!isCommandPressed) {
       return;
     }
@@ -173,16 +183,16 @@ var ZoomPopover = function (_a) {
     levels = _b === void 0 ? DEFAULT_LEVELS : _b,
     scale = _a.scale,
     onZoom = _a.onZoom;
-  var l10n = useContext(main.LocalizationContext).l10n;
-  var direction = useContext(main.ThemeContext).direction;
-  var isRtl = direction === main.TextDirection.RightToLeft;
+  var l10n = useContext(LocalizationContext).l10n;
+  var direction = useContext(ThemeContext).direction;
+  var isRtl = direction === TextDirection.RightToLeft;
   var getSpcialLevelLabel = function (level) {
     switch (level) {
-      case main.SpecialZoomLevel.ActualSize:
+      case SpecialZoomLevel.ActualSize:
         return l10n && l10n.zoom ? l10n.zoom.actualSize : "Actual size";
-      case main.SpecialZoomLevel.PageFit:
+      case SpecialZoomLevel.PageFit:
         return l10n && l10n.zoom ? l10n.zoom.pageFit : "Page fit";
-      case main.SpecialZoomLevel.PageWidth:
+      case SpecialZoomLevel.PageWidth:
         return l10n && l10n.zoom ? l10n.zoom.pageWidth : "Page width";
     }
   };
@@ -191,52 +201,38 @@ var ZoomPopover = function (_a) {
     var click = function () {
       toggle();
     };
-    return createElement(
-      main.MinimalButton,
-      { ariaLabel: zoomDocumentLabel, testId: "zoom__popover-target", onClick: click },
-      createElement(
-        "span",
-        { className: "rpv-zoom__popover-target" },
-        createElement(
-          "span",
-          {
-            "data-testid": "zoom__popover-target-scale",
-            className: main.classNames({
-              "rpv-zoom__popover-target-scale": true,
-              "rpv-zoom__popover-target-scale--ltr": !isRtl,
-              "rpv-zoom__popover-target-scale--rtl": isRtl,
-            }),
-          },
-          Math.round(scale * 100),
-          "%"
-        ),
-        createElement("span", { className: "rpv-zoom__popover-target-arrow" })
-      )
+    return (
+      <MinimalButton ariaLabel={zoomDocumentLabel} onClick={click}>
+        <span className="rpv-zoom__popover-target">
+          <span className={`rpv-zoom__popover-target-scale ${isRtl ? "rpv-zoom__popover-target-scale--rtl" : ""} ${!isRtl ? "rpv-zoom__popover-target-scale--ltr" : ""}`}>{Math.round(scale * 100)}%</span>
+          <span className="rpv-zoom__popover-target-arrow"></span>
+        </span>
+      </MinimalButton>
     );
   };
   var renderContent = function (toggle) {
     return createElement(
-      main.Menu,
+      Menu,
       null,
-      Object.keys(main.SpecialZoomLevel).map(function (k) {
+      Object.keys(SpecialZoomLevel).map(function (k) {
         var level = k;
         var clickMenuItem = function () {
           toggle();
           onZoom(level);
         };
-        return createElement(main.MenuItem, { key: level, onClick: clickMenuItem }, getSpcialLevelLabel(level));
+        return createElement(MenuItem, { key: level, onClick: clickMenuItem }, getSpcialLevelLabel(level));
       }),
-      createElement(main.MenuDivider, null),
+      createElement(MenuDivider, null),
       levels.map(function (level) {
         var clickMenuItem = function () {
           toggle();
           onZoom(level);
         };
-        return createElement(main.MenuItem, { key: level, onClick: clickMenuItem }, "".concat(Math.round(level * 100), "%"));
+        return createElement(MenuItem, { key: level, onClick: clickMenuItem }, "".concat(Math.round(level * 100), "%"));
       })
     );
   };
-  return createElement(main.Popover, { ariaControlsSuffix: "zoom", ariaHasPopup: "menu", position: main.Position.BottomCenter, target: renderTarget, content: renderContent, offset: PORTAL_OFFSET, closeOnClickOutside: true, closeOnEscape: true });
+  return createElement(Popover, { ariaControlsSuffix: "zoom", ariaHasPopup: "menu", position: Position.BottomCenter, target: renderTarget, content: renderContent, offset: PORTAL_OFFSET, closeOnClickOutside: true, closeOnEscape: true });
 };
 
 var Zoom = function (_a) {
@@ -264,13 +260,13 @@ var TOOLTIP_OFFSET$1 = { left: 0, top: 8 };
 var ZoomInButton = function (_a) {
   var enableShortcuts = _a.enableShortcuts,
     onClick = _a.onClick;
-  var l10n = useContext(main.LocalizationContext).l10n;
+  var l10n = useContext(LocalizationContext).l10n;
   var label = l10n && l10n.zoom ? l10n.zoom.zoomIn : "Zoom in";
-  var ariaKeyShortcuts = enableShortcuts ? (main.isMac() ? "Meta+=" : "Ctrl+=") : "";
-  return createElement(main.Tooltip, {
+  var ariaKeyShortcuts = enableShortcuts ? (isMac() ? "Meta+=" : "Ctrl+=") : "";
+  return createElement(Tooltip, {
     ariaControlsSuffix: "zoom-in",
-    position: main.Position.BottomCenter,
-    target: createElement(main.MinimalButton, { ariaKeyShortcuts: ariaKeyShortcuts, ariaLabel: label, testId: "zoom__in-button", onClick: onClick }, createElement(ZoomInIcon, null)),
+    position: Position.BottomCenter,
+    target: createElement(MinimalButton, { ariaKeyShortcuts: ariaKeyShortcuts, ariaLabel: label, testId: "zoom__in-button", onClick: onClick }, createElement(ZoomInIcon, null)),
     content: function () {
       return label;
     },
@@ -299,22 +295,22 @@ var ZoomIn = function (_a) {
 
 var ZoomInMenuItem = function (_a) {
   var onClick = _a.onClick;
-  var l10n = useContext(main.LocalizationContext).l10n;
+  var l10n = useContext(LocalizationContext).l10n;
   var label = l10n && l10n.zoom ? l10n.zoom.zoomIn : "Zoom in";
-  return createElement(main.MenuItem, { icon: createElement(ZoomInIcon, null), testId: "zoom__in-menu", onClick: onClick }, label);
+  return createElement(MenuItem, { icon: createElement(ZoomInIcon, null), testId: "zoom__in-menu", onClick: onClick }, label);
 };
 
 var TOOLTIP_OFFSET = { left: 0, top: 8 };
 var ZoomOutButton = function (_a) {
   var enableShortcuts = _a.enableShortcuts,
     onClick = _a.onClick;
-  var l10n = useContext(main.LocalizationContext).l10n;
+  var l10n = useContext(LocalizationContext).l10n;
   var label = l10n && l10n.zoom ? l10n.zoom.zoomOut : "Zoom out";
-  var ariaKeyShortcuts = enableShortcuts ? (main.isMac() ? "Meta+-" : "Ctrl+-") : "";
-  return createElement(main.Tooltip, {
+  var ariaKeyShortcuts = enableShortcuts ? (isMac() ? "Meta+-" : "Ctrl+-") : "";
+  return createElement(Tooltip, {
     ariaControlsSuffix: "zoom-out",
-    position: main.Position.BottomCenter,
-    target: createElement(main.MinimalButton, { ariaKeyShortcuts: ariaKeyShortcuts, ariaLabel: label, testId: "zoom__out-button", onClick: onClick }, createElement(ZoomOutIcon, null)),
+    position: Position.BottomCenter,
+    target: createElement(MinimalButton, { ariaKeyShortcuts: ariaKeyShortcuts, ariaLabel: label, testId: "zoom__out-button", onClick: onClick }, createElement(ZoomOutIcon, null)),
     content: function () {
       return label;
     },
@@ -343,9 +339,9 @@ var ZoomOut = function (_a) {
 
 var ZoomOutMenuItem = function (_a) {
   var onClick = _a.onClick;
-  var l10n = useContext(main.LocalizationContext).l10n;
+  var l10n = useContext(LocalizationContext).l10n;
   var label = l10n && l10n.zoom ? l10n.zoom.zoomOut : "Zoom out";
-  return createElement(main.MenuItem, { icon: createElement(ZoomOutIcon, null), testId: "zoom__out-menu", onClick: onClick }, label);
+  return createElement(MenuItem, { icon: createElement(ZoomOutIcon, null), testId: "zoom__out-menu", onClick: onClick }, label);
 };
 
 var useZoomPlugin = function (props) {
@@ -353,7 +349,7 @@ var useZoomPlugin = function (props) {
     return Object.assign({}, { enableShortcuts: true }, props);
   }, []);
   var store = useMemo(function () {
-    return main.createStore({});
+    return createStore({});
   }, []);
   var CurrentScaleDecorator = function (props) {
     return createElement(CurrentScale, __assign({}, props, { store: store }));

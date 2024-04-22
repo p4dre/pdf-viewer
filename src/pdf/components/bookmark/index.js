@@ -1,5 +1,12 @@
 import { useState, useEffect, useContext, useMemo, Fragment, useRef, createElement } from "react";
 import * as main from "../../../main";
+import Icon from "../../../Icon";
+import { getDestination } from "../../../utils";
+import LocalizationContext from "../../../LocalizationContext";
+import ThemeContext from "../../../ThemeContext";
+import Spinner from "../../../Spinner";
+import { TextDirection } from "../../../enums";
+import { createStore } from "../../../utils";
 
 var __assign = function () {
   __assign =
@@ -15,11 +22,11 @@ var __assign = function () {
 };
 
 var DownArrowIcon = function () {
-  return createElement(main.Icon, { size: 16 }, createElement("path", { d: "M6.427,8.245A.5.5,0,0,1,6.862,7.5H17.138a.5.5,0,0,1,.435.749l-5.139,9a.5.5,0,0,1-.868,0Z" }));
+  return createElement(Icon, { size: 16 }, createElement("path", { d: "M6.427,8.245A.5.5,0,0,1,6.862,7.5H17.138a.5.5,0,0,1,.435.749l-5.139,9a.5.5,0,0,1-.868,0Z" }));
 };
 
 var RightArrowIcon = function () {
-  return createElement(main.Icon, { size: 16 }, createElement("path", { d: "M9.248,17.572a.5.5,0,0,1-.748-.434V6.862a.5.5,0,0,1,.748-.434l8.992,5.138a.5.5,0,0,1,0,.868Z" }));
+  return createElement(Icon, { size: 16 }, createElement("path", { d: "M9.248,17.572a.5.5,0,0,1-.748-.434V6.862a.5.5,0,0,1,.748-.434l8.992,5.138a.5.5,0,0,1,0,.868Z" }));
 };
 
 var shouldBeCollapsed = function (bookmark) {
@@ -77,7 +84,7 @@ var BookmarkItem = function (_a) {
   var jumpToDest = function () {
     var dest = bookmark.dest;
     var jumpToDestination = store.get("jumpToDestination");
-    main.getDestination(doc, dest).then(function (target) {
+    getDestination(doc, dest).then(function (target) {
       if (jumpToDestination) {
         jumpToDestination(__assign({ label: bookmark.title }, target));
       }
@@ -274,9 +281,9 @@ var BookmarkLoader = function (_a) {
     isBookmarkExpanded = _a.isBookmarkExpanded,
     renderBookmarkItem = _a.renderBookmarkItem,
     store = _a.store;
-  var l10n = useContext(main.LocalizationContext).l10n;
-  var direction = useContext(main.ThemeContext).direction;
-  var isRtl = direction === main.TextDirection.RightToLeft;
+  var l10n = useContext(LocalizationContext).l10n;
+  var direction = useContext(ThemeContext).direction;
+  var isRtl = direction === TextDirection.RightToLeft;
   var _b = useState({
       isLoaded: false,
       items: [],
@@ -298,31 +305,18 @@ var BookmarkLoader = function (_a) {
     },
     [doc]
   );
-  return !bookmarks.isLoaded
-    ? createElement("div", { className: "rpv-bookmark__loader" }, createElement(main.Spinner, null))
-    : bookmarks.items.length === 0
-    ? createElement(
-        "div",
-        {
-          "data-testid": "bookmark__empty",
-          className: main.classNames({
-            "rpv-bookmark__empty": true,
-            "rpv-bookmark__empty--rtl": isRtl,
-          }),
-        },
-        l10n && l10n.bookmark ? l10n.bookmark.noBookmark : "There is no bookmark"
-      )
-    : createElement(
-        "div",
-        {
-          "data-testid": "bookmark__container",
-          className: main.classNames({
-            "rpv-bookmark__container": true,
-            "rpv-bookmark__container--rtl": isRtl,
-          }),
-        },
-        createElement(BookmarkListRoot, { bookmarks: bookmarks.items, doc: doc, isBookmarkExpanded: isBookmarkExpanded, renderBookmarkItem: renderBookmarkItem, store: store })
-      );
+  const bookmarkProps = { bookmarks: bookmarks.items, doc: doc, isBookmarkExpanded: isBookmarkExpanded, renderBookmarkItem: renderBookmarkItem, store: store };
+  return !bookmarks.isLoaded ? (
+    <div className="rpv-bookmark__loader">
+      <Spinner />
+    </div>
+  ) : bookmarks.items.length === 0 ? (
+    <div className={`rpv-bookmark__empty ${isRtl ? "rpv-bookmark__empty--rtl" : ""}`}>{l10n && l10n.bookmark ? l10n.bookmark.noBookmark : "There is no bookmark"}</div>
+  ) : (
+    <div className={`rpv-bookmark__container ${isRtl ? "rpv-bookmark__container--rtl" : ""}`}>
+      <BookmarkListRoot {...bookmarkProps} />
+    </div>
+  );
 };
 
 var BookmarkListWithStore = function (_a) {
@@ -341,12 +335,19 @@ var BookmarkListWithStore = function (_a) {
       store.unsubscribe("doc", handleDocumentChanged);
     };
   }, []);
-  return currentDoc ? createElement(BookmarkLoader, { doc: currentDoc, isBookmarkExpanded: isBookmarkExpanded, renderBookmarkItem: renderBookmarkItem, store: store }) : createElement("div", { className: "rpv-bookmark__loader" }, createElement(main.Spinner, null));
+  const bookmarkLoaderProps = { doc: currentDoc, isBookmarkExpanded: isBookmarkExpanded, renderBookmarkItem: renderBookmarkItem, store: store };
+  return currentDoc ? (
+    <BookmarkLoader {...bookmarkLoaderProps} />
+  ) : (
+    <div className="rpv-bookmark__loader">
+      <Spinner />
+    </div>
+  );
 };
 
 var useBookmarkPlugin = function () {
   var store = useMemo(function () {
-    return main.createStore({
+    return createStore({
       bookmarkExpandedMap: new Map(),
     });
   }, []);

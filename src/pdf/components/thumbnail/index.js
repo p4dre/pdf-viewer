@@ -1,5 +1,24 @@
-import { useRef, useState, createElement, Fragment, useEffect, useMemo, useContext, createContext, useCallback } from "react";
-import * as main from "../../../main";
+import { useRef, useState, createElement, Fragment, useEffect, useLayoutEffect, useMemo, useContext, createContext, useCallback } from "react";
+import useIsMounted from "../../../hooks/useIsMounted";
+import useIntersectionObserver from "../../../hooks/useIntersectionObserver";
+import { getPage, createStore, chunk } from "../../../utils";
+import Spinner from "../../../Spinner";
+import LocalizationContext from "../../../LocalizationContext";
+import ThemeContext from "../../../ThemeContext";
+import { TextDirection, ViewMode } from "../../../enums";
+import usePrevious from "../../../hooks/usePrevious";
+import useRenderQueue from "../../../hooks/useRenderQueue";
+import LazyRender from "../../../LazyRender";
+
+var classNames = function (classes) {
+  var result = [];
+  Object.keys(classes).forEach(function (clazz) {
+    if (clazz && classes[clazz]) {
+      result.push(clazz);
+    }
+  });
+  return result.join(" ");
+};
 
 let ThumbnailDirection;
 (function (ThumbnailDirection) {
@@ -34,7 +53,7 @@ var CoverInner = function (_a) {
   var _b = useState(""),
     src = _b[0],
     setSrc = _b[1];
-  var isMounted = main.useIsMounted();
+  var isMounted = useIsMounted();
   var renderTask = useRef();
   var _c = useState(store.get("rotation") || 0),
     rotation = _c[0],
@@ -55,7 +74,7 @@ var CoverInner = function (_a) {
   var handleVisibilityChanged = function (params) {
     setVisible(params.isVisible);
   };
-  var containerRef = main.useIntersectionObserver({
+  var containerRef = useIntersectionObserver({
     onVisibilityChanged: handleVisibilityChanged,
   });
   useEffect(
@@ -68,7 +87,7 @@ var CoverInner = function (_a) {
         return;
       }
       setSrc("");
-      main.getPage(doc, normalizePage).then(function (page) {
+      getPage(doc, normalizePage).then(function (page) {
         var viewport = page.getViewport({ scale: 1 });
         var viewportRotation = viewport.rotation;
         var rotationValue = (viewportRotation + rotation + pageRotation) % 360;
@@ -121,7 +140,7 @@ var CoverInner = function (_a) {
     { ref: containerRef, className: "rpv-thumbnail__cover-inner", "data-testid": "thumbnail__cover-inner" },
     src
       ? createElement("img", { className: "rpv-thumbnail__cover-image", "data-testid": "thumbnail__cover-image", src: src })
-      : createElement("div", { className: "rpv-thumbnail__cover-loader", "data-testid": "thumbnail__cover-loader" }, renderSpinner ? renderSpinner() : createElement(main.Spinner, null))
+      : createElement("div", { className: "rpv-thumbnail__cover-loader", "data-testid": "thumbnail__cover-loader" }, renderSpinner ? renderSpinner() : createElement(Spinner, null))
   );
 };
 
@@ -145,12 +164,12 @@ var Cover = function (_a) {
   return createElement(
     "div",
     { className: "rpv-thumbnail__cover" },
-    currentDoc ? createElement(CoverInner, { doc: currentDoc, getPageIndex: getPageIndex, renderSpinner: renderSpinner, store: store, width: width }) : createElement("div", { className: "rpv-thumbnail__cover-loader" }, renderSpinner ? renderSpinner() : createElement(main.Spinner, null))
+    currentDoc ? createElement(CoverInner, { doc: currentDoc, getPageIndex: getPageIndex, renderSpinner: renderSpinner, store: store, width: width }) : createElement("div", { className: "rpv-thumbnail__cover-loader" }, renderSpinner ? renderSpinner() : createElement(Spinner, null))
   );
 };
 
 var defaultSpinner = function () {
-  return createElement(main.Spinner, null);
+  return createElement(Spinner, null);
 };
 var SpinnerContext = createContext({
   renderSpinner: defaultSpinner,
@@ -159,7 +178,7 @@ var SpinnerContext = createContext({
 var FetchLabels = function (_a) {
   var children = _a.children,
     doc = _a.doc;
-  var isMounted = main.useIsMounted();
+  var isMounted = useIsMounted();
   var _b = useState({
       loading: true,
       labels: [],
@@ -213,7 +232,7 @@ var ThumbnailItem = function (_a) {
     thumbnailHeight = _a.thumbnailHeight,
     thumbnailWidth = _a.thumbnailWidth,
     onRenderCompleted = _a.onRenderCompleted;
-  var l10n = useContext(main.LocalizationContext).l10n;
+  var l10n = useContext(LocalizationContext).l10n;
   var renderTask = useRef();
   var _b = useState(""),
     src = _b[0],
@@ -272,7 +291,7 @@ var ThumbnailContainer = function (_a) {
     thumbnailWidth = _a.thumbnailWidth,
     onRenderCompleted = _a.onRenderCompleted,
     onVisibilityChanged = _a.onVisibilityChanged;
-  var isMounted = main.useIsMounted();
+  var isMounted = useIsMounted();
   var _b = useState({
       height: pageHeight,
       page: null,
@@ -291,7 +310,7 @@ var ThumbnailContainer = function (_a) {
   useEffect(
     function () {
       if (shouldRender) {
-        main.getPage(doc, pageIndex).then(function (pdfPage) {
+        getPage(doc, pageIndex).then(function (pdfPage) {
           var viewport = pdfPage.getViewport({ scale: 1 });
           isMounted.current &&
             setPageSize({
@@ -306,7 +325,7 @@ var ThumbnailContainer = function (_a) {
     [shouldRender]
   );
   var rotationNumber = (pageSize.viewportRotation + rotation + pageRotation) % 360;
-  var containerRef = main.useIntersectionObserver({
+  var containerRef = useIntersectionObserver({
     onVisibilityChanged: function (visibility) {
       onVisibilityChanged(pageIndex, visibility);
     },
@@ -357,15 +376,15 @@ var ThumbnailList = function (_a) {
   var _b = useState(currentPage),
     currentFocused = _b[0],
     setCurrentFocused = _b[1];
-  var direction = useContext(main.ThemeContext).direction;
-  var isRtl = direction === main.TextDirection.RightToLeft;
+  var direction = useContext(ThemeContext).direction;
+  var isRtl = direction === TextDirection.RightToLeft;
   var _c = useState(-1),
     renderPageIndex = _c[0],
     setRenderPageIndex = _c[1];
-  var isMounted = main.useIsMounted();
-  var previousViewMode = main.usePrevious(viewMode);
+  var isMounted = useIsMounted();
+  var previousViewMode = usePrevious(viewMode);
   var hasRenderingThumbnailRef = useRef(false);
-  var renderQueue = main.useRenderQueue({ doc: doc });
+  var renderQueue = useRenderQueue({ doc: doc });
   var pageIndexes = useMemo(
     function () {
       return Array(numPages)
@@ -379,13 +398,13 @@ var ThumbnailList = function (_a) {
   var chunks = useMemo(
     function () {
       switch (viewMode) {
-        case main.ViewMode.DualPage:
-          return main.chunk(pageIndexes, 2);
-        case main.ViewMode.DualPageWithCover:
-          return [[pageIndexes[0]]].concat(main.chunk(pageIndexes.slice(1), 2));
-        case main.ViewMode.SinglePage:
+        case ViewMode.DualPage:
+          return chunk(pageIndexes, 2);
+        case ViewMode.DualPageWithCover:
+          return [[pageIndexes[0]]].concat(chunk(pageIndexes.slice(1), 2));
+        case ViewMode.SinglePage:
         default:
-          return main.chunk(pageIndexes, 1);
+          return chunk(pageIndexes, 1);
       }
     },
     [docId, viewMode]
@@ -436,7 +455,7 @@ var ThumbnailList = function (_a) {
       onJumpToPage(currentFocused);
     }
   };
-  main.useIsomorphicLayoutEffect(
+  useLayoutEffect(
     function () {
       var container = containerRef.current;
       if (!container) {
@@ -458,7 +477,7 @@ var ThumbnailList = function (_a) {
     },
     [currentFocused]
   );
-  main.useIsomorphicLayoutEffect(
+  useLayoutEffect(
     function () {
       var container = containerRef.current;
       var thumbnails = thumbnailsRef.current;
@@ -513,7 +532,7 @@ var ThumbnailList = function (_a) {
     },
     [docId, rotatedPage]
   );
-  main.useIsomorphicLayoutEffect(
+  useLayoutEffect(
     function () {
       if (previousViewMode !== viewMode) {
         renderQueue.markNotRendered();
@@ -523,7 +542,7 @@ var ThumbnailList = function (_a) {
     [viewMode]
   );
   var renderPageThumbnail = function (pageIndex) {
-    var isCover = viewMode === main.ViewMode.DualPageWithCover && (pageIndex === 0 || (numPages % 2 === 0 && pageIndex === numPages - 1));
+    var isCover = viewMode === ViewMode.DualPageWithCover && (pageIndex === 0 || (numPages % 2 === 0 && pageIndex === numPages - 1));
     var key = "".concat(doc.loadingTask.docId, "___").concat(pageIndex);
     var pageLabel = labels.length === numPages ? labels[pageIndex] : "".concat(pageIndex + 1);
     var label = renderCurrentPageLabel ? renderCurrentPageLabel({ currentPage: currentPage, pageIndex: pageIndex, numPages: numPages, pageLabel: pageLabel }) : pageLabel;
@@ -561,14 +580,14 @@ var ThumbnailList = function (_a) {
           createElement(
             "div",
             {
-              className: main.classNames({
+              className: classNames({
                 "rpv-thumbnail__item": true,
-                "rpv-thumbnail__item--dual-even": viewMode === main.ViewMode.DualPage && pageIndex % 2 === 0,
-                "rpv-thumbnail__item--dual-odd": viewMode === main.ViewMode.DualPage && pageIndex % 2 === 1,
+                "rpv-thumbnail__item--dual-even": viewMode === ViewMode.DualPage && pageIndex % 2 === 0,
+                "rpv-thumbnail__item--dual-odd": viewMode === ViewMode.DualPage && pageIndex % 2 === 1,
                 "rpv-thumbnail__item--dual-cover": isCover,
-                "rpv-thumbnail__item--dual-cover-even": viewMode === main.ViewMode.DualPageWithCover && !isCover && pageIndex % 2 === 0,
-                "rpv-thumbnail__item--dual-cover-odd": viewMode === main.ViewMode.DualPageWithCover && !isCover && pageIndex % 2 === 1,
-                "rpv-thumbnail__item--single": viewMode === main.ViewMode.SinglePage,
+                "rpv-thumbnail__item--dual-cover-even": viewMode === ViewMode.DualPageWithCover && !isCover && pageIndex % 2 === 0,
+                "rpv-thumbnail__item--dual-cover-odd": viewMode === ViewMode.DualPageWithCover && !isCover && pageIndex % 2 === 1,
+                "rpv-thumbnail__item--single": viewMode === ViewMode.SinglePage,
                 "rpv-thumbnail__item--selected": currentPage === pageIndex,
               }),
               role: "button",
@@ -587,7 +606,7 @@ var ThumbnailList = function (_a) {
     {
       ref: containerRef,
       "data-testid": "thumbnail__list",
-      className: main.classNames({
+      className: classNames({
         "rpv-thumbnail__list": true,
         "rpv-thumbnail__list--horizontal": thumbnailDirection === "Horizontal",
         "rpv-thumbnail__list--rtl": isRtl,
@@ -598,13 +617,13 @@ var ThumbnailList = function (_a) {
     chunks.map(function (chunkItem, index) {
       var isSelectedChunk = false;
       switch (viewMode) {
-        case main.ViewMode.DualPage:
+        case ViewMode.DualPage:
           isSelectedChunk = currentPage === 2 * index || currentPage === 2 * index + 1;
           break;
-        case main.ViewMode.DualPageWithCover:
+        case ViewMode.DualPageWithCover:
           isSelectedChunk = (currentPage === 0 && index === 0) || (index > 0 && currentPage === 2 * index - 1) || (index > 0 && currentPage === 2 * index);
           break;
-        case main.ViewMode.SinglePage:
+        case ViewMode.SinglePage:
         default:
           isSelectedChunk = currentPage === index;
           break;
@@ -612,11 +631,11 @@ var ThumbnailList = function (_a) {
       return createElement(
         "div",
         {
-          className: main.classNames({
+          className: classNames({
             "rpv-thumbnail__items": true,
-            "rpv-thumbnail__items--dual": viewMode === main.ViewMode.DualPage,
-            "rpv-thumbnail__items--dual-cover": viewMode === main.ViewMode.DualPageWithCover,
-            "rpv-thumbnail__items--single": viewMode === main.ViewMode.SinglePage,
+            "rpv-thumbnail__items--dual": viewMode === ViewMode.DualPage,
+            "rpv-thumbnail__items--dual-cover": viewMode === ViewMode.DualPageWithCover,
+            "rpv-thumbnail__items--single": viewMode === ViewMode.SinglePage,
             "rpv-thumbnail__items--selected": isSelectedChunk,
           }),
           key: "".concat(index, "___").concat(viewMode),
@@ -710,7 +729,7 @@ var ThumbnailListWithStore = function (_a) {
       store.unsubscribe("viewMode", handleViewModeChanged);
     };
   }, []);
-  main.useIsomorphicLayoutEffect(function () {
+  useLayoutEffect(function () {
     store.subscribe("currentPage", handleCurrentPageChanged);
     return function () {
       store.unsubscribe("currentPage", handleCurrentPageChanged);
@@ -719,7 +738,7 @@ var ThumbnailListWithStore = function (_a) {
   const spinner = useContext(SpinnerContext).renderSpinner();
   return currentDoc
     ? createElement(
-        main.LazyRender,
+        LazyRender,
         {
           testId: "thumbnail__list-container",
           attrs: {
@@ -751,9 +770,9 @@ var ThumbnailListWithStore = function (_a) {
 
 var useThumbnailPlugin = function (pluginProps) {
   var store = useMemo(function () {
-    return main.createStore({
+    return createStore({
       rotatePage: function () {},
-      viewMode: main.ViewMode.SinglePage,
+      viewMode: ViewMode.SinglePage,
     });
   }, []);
   var _a = useState(""),

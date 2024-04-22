@@ -1,9 +1,17 @@
-import { useState, useMemo, createElement, useContext, Fragment, useRef, useEffect } from "react";
-import * as main from "../../../main";
+import { useState, useMemo, createElement, useContext, Fragment, useRef, useEffect, useLayoutEffect } from "react";
+import Icon from "../../../Icon";
+import LocalizationContext from "../../../LocalizationContext";
+import TextBox from "../../../TextBox";
+import useIsMounted from "../../../hooks/useIsMounted";
+import Tooltip from "../../../Tooltip";
+import { Position } from "../../../enums";
+import MinimalButton from "../../../MinimalButton";
+import MenuItem from "../../../MenuItem";
+import { isMac, createStore } from "../../../utils";
 
 var DownArrowIcon = function () {
   return createElement(
-    main.Icon,
+    Icon,
     { size: 16 },
     createElement("path", {
       d: "M2.32,2.966h19.452c0.552,0.001,1,0.449,0.999,1.001c0,0.182-0.05,0.36-0.144,0.516L12.9,20.552\n            c-0.286,0.472-0.901,0.624-1.373,0.338c-0.138-0.084-0.254-0.2-0.338-0.338L1.465,4.483C1.179,4.01,1.331,3.396,1.804,3.11\n            C1.96,3.016,2.138,2.966,2.32,2.966z",
@@ -12,7 +20,7 @@ var DownArrowIcon = function () {
 };
 
 var NextIcon = function () {
-  return createElement(main.Icon, { size: 16 }, createElement("path", { d: "M0.541,5.627L11.666,18.2c0.183,0.207,0.499,0.226,0.706,0.043c0.015-0.014,0.03-0.028,0.043-0.043\n            L23.541,5.627" }));
+  return createElement(Icon, { size: 16 }, createElement("path", { d: "M0.541,5.627L11.666,18.2c0.183,0.207,0.499,0.226,0.706,0.043c0.015-0.014,0.03-0.028,0.043-0.043\n            L23.541,5.627" }));
 };
 
 var __assign = function () {
@@ -35,7 +43,7 @@ var useCurrentPage = function (store) {
   var handleCurrentPageChanged = function (currentPageIndex) {
     setCurrentPage(currentPageIndex);
   };
-  main.useIsomorphicLayoutEffect(function () {
+  useLayoutEffect(function () {
     store.subscribe("currentPage", handleCurrentPageChanged);
     return function () {
       store.unsubscribe("currentPage", handleCurrentPageChanged);
@@ -62,7 +70,7 @@ var useNumberOfPages = function (store) {
 
 var CurrentPageInput = function (_a) {
   var store = _a.store;
-  var l10n = useContext(main.LocalizationContext).l10n;
+  var l10n = useContext(LocalizationContext).l10n;
   var _b = useState("1"),
     editingPage = _b[0],
     setEditingPage = _b[1];
@@ -112,13 +120,13 @@ var CurrentPageInput = function (_a) {
     }
   };
   var label = l10n && l10n.pageNavigation ? l10n.pageNavigation.enterPageNumber : "Enter a page number";
-  return createElement("span", { className: "rpv-page-navigation__current-page-input" }, createElement(main.TextBox, { ariaLabel: label, testId: "page-navigation__current-page-input", type: "text", value: editingPage, onChange: setEditingPage, onKeyDown: keydownPage }));
+  return createElement("span", { className: "rpv-page-navigation__current-page-input" }, createElement(TextBox, { ariaLabel: label, testId: "page-navigation__current-page-input", type: "text", value: editingPage, onChange: setEditingPage, onKeyDown: keydownPage }));
 };
 
 var FetchLabels = function (_a) {
   var children = _a.children,
     doc = _a.doc;
-  var isMounted = main.useIsMounted();
+  var isMounted = useIsMounted();
   var _b = useState({
       loading: true,
       labels: [],
@@ -176,7 +184,7 @@ var CurrentPageLabel = function (_a) {
 
 var UpArrowIcon = function () {
   return createElement(
-    main.Icon,
+    Icon,
     { size: 16 },
     createElement("path", {
       d: "M21.783,21.034H2.332c-0.552,0-1-0.448-1-1c0-0.182,0.05-0.361,0.144-0.517L11.2,3.448\n            c0.286-0.472,0.901-0.624,1.373-0.338c0.138,0.084,0.254,0.2,0.338,0.338l9.726,16.069c0.286,0.473,0.134,1.087-0.339,1.373\n            C22.143,20.984,21.965,21.034,21.783,21.034z",
@@ -188,12 +196,12 @@ var TOOLTIP_OFFSET$3 = { left: 0, top: 8 };
 var GoToFirstPageButton = function (_a) {
   var isDisabled = _a.isDisabled,
     onClick = _a.onClick;
-  var l10n = useContext(main.LocalizationContext).l10n;
+  var l10n = useContext(LocalizationContext).l10n;
   var label = l10n && l10n.pageNavigation ? l10n.pageNavigation.goToFirstPage : "First page";
-  return createElement(main.Tooltip, {
+  return createElement(Tooltip, {
     ariaControlsSuffix: "page-navigation-first",
-    position: main.Position.BottomCenter,
-    target: createElement(main.MinimalButton, { ariaLabel: label, isDisabled: isDisabled, testId: "page-navigation__first-button", onClick: onClick }, createElement(UpArrowIcon, null)),
+    position: Position.BottomCenter,
+    target: createElement(MinimalButton, { ariaLabel: label, isDisabled: isDisabled, testId: "page-navigation__first-button", onClick: onClick }, createElement(UpArrowIcon, null)),
     content: function () {
       return label;
     },
@@ -224,21 +232,21 @@ var GoToFirstPage = function (_a) {
 var GoToFirstPageMenuItem = function (_a) {
   var isDisabled = _a.isDisabled,
     onClick = _a.onClick;
-  var l10n = useContext(main.LocalizationContext).l10n;
+  var l10n = useContext(LocalizationContext).l10n;
   var label = l10n && l10n.pageNavigation ? l10n.pageNavigation.goToFirstPage : "First page";
-  return createElement(main.MenuItem, { icon: createElement(UpArrowIcon, null), isDisabled: isDisabled, testId: "page-navigation__first-menu", onClick: onClick }, label);
+  return createElement(MenuItem, { icon: createElement(UpArrowIcon, null), isDisabled: isDisabled, testId: "page-navigation__first-menu", onClick: onClick }, label);
 };
 
 var TOOLTIP_OFFSET$2 = { left: 0, top: 8 };
 var GoToLastPageButton = function (_a) {
   var isDisabled = _a.isDisabled,
     onClick = _a.onClick;
-  var l10n = useContext(main.LocalizationContext).l10n;
+  var l10n = useContext(LocalizationContext).l10n;
   var label = l10n && l10n.pageNavigation ? l10n.pageNavigation.goToLastPage : "Last page";
-  return createElement(main.Tooltip, {
+  return createElement(Tooltip, {
     ariaControlsSuffix: "page-navigation-last",
-    position: main.Position.BottomCenter,
-    target: createElement(main.MinimalButton, { ariaLabel: label, isDisabled: isDisabled, testId: "page-navigation__last-button", onClick: onClick }, createElement(DownArrowIcon, null)),
+    position: Position.BottomCenter,
+    target: createElement(MinimalButton, { ariaLabel: label, isDisabled: isDisabled, testId: "page-navigation__last-button", onClick: onClick }, createElement(DownArrowIcon, null)),
     content: function () {
       return label;
     },
@@ -270,21 +278,21 @@ var GoToLastPage = function (_a) {
 var GoToLastPageMenuItem = function (_a) {
   var isDisabled = _a.isDisabled,
     onClick = _a.onClick;
-  var l10n = useContext(main.LocalizationContext).l10n;
+  var l10n = useContext(LocalizationContext).l10n;
   var label = l10n && l10n.pageNavigation ? l10n.pageNavigation.goToLastPage : "Last page";
-  return createElement(main.MenuItem, { icon: createElement(DownArrowIcon, null), isDisabled: isDisabled, testId: "page-navigation__last-menu", onClick: onClick }, label);
+  return createElement(MenuItem, { icon: createElement(DownArrowIcon, null), isDisabled: isDisabled, testId: "page-navigation__last-menu", onClick: onClick }, label);
 };
 
 var TOOLTIP_OFFSET$1 = { left: 0, top: 8 };
 var GoToNextPageButton = function (_a) {
   var isDisabled = _a.isDisabled,
     onClick = _a.onClick;
-  var l10n = useContext(main.LocalizationContext).l10n;
+  var l10n = useContext(LocalizationContext).l10n;
   var label = l10n && l10n.pageNavigation ? l10n.pageNavigation.goToNextPage : "Next page";
-  return createElement(main.Tooltip, {
+  return createElement(Tooltip, {
     ariaControlsSuffix: "page-navigation-next",
-    position: main.Position.BottomCenter,
-    target: createElement(main.MinimalButton, { ariaLabel: label, isDisabled: isDisabled, testId: "page-navigation__next-button", onClick: onClick }, createElement(NextIcon, null)),
+    position: Position.BottomCenter,
+    target: createElement(MinimalButton, { ariaLabel: label, isDisabled: isDisabled, testId: "page-navigation__next-button", onClick: onClick }, createElement(NextIcon, null)),
     content: function () {
       return label;
     },
@@ -316,25 +324,25 @@ var GoToNextPage = function (_a) {
 var GoToNextPageMenuItem = function (_a) {
   var isDisabled = _a.isDisabled,
     onClick = _a.onClick;
-  var l10n = useContext(main.LocalizationContext).l10n;
+  var l10n = useContext(LocalizationContext).l10n;
   var label = l10n && l10n.pageNavigation ? l10n.pageNavigation.goToNextPage : "Next page";
-  return createElement(main.MenuItem, { icon: createElement(NextIcon, null), isDisabled: isDisabled, testId: "page-navigation__next-menu", onClick: onClick }, label);
+  return createElement(MenuItem, { icon: createElement(NextIcon, null), isDisabled: isDisabled, testId: "page-navigation__next-menu", onClick: onClick }, label);
 };
 
 var PreviousIcon = function () {
-  return createElement(main.Icon, { size: 16 }, createElement("path", { d: "M23.535,18.373L12.409,5.8c-0.183-0.207-0.499-0.226-0.706-0.043C11.688,5.77,11.674,5.785,11.66,5.8\n            L0.535,18.373" }));
+  return createElement(Icon, { size: 16 }, createElement("path", { d: "M23.535,18.373L12.409,5.8c-0.183-0.207-0.499-0.226-0.706-0.043C11.688,5.77,11.674,5.785,11.66,5.8\n            L0.535,18.373" }));
 };
 
 var TOOLTIP_OFFSET = { left: 0, top: 8 };
 var GoToPreviousPageButton = function (_a) {
   var isDisabled = _a.isDisabled,
     onClick = _a.onClick;
-  var l10n = useContext(main.LocalizationContext).l10n;
+  var l10n = useContext(LocalizationContext).l10n;
   var label = l10n && l10n.pageNavigation ? l10n.pageNavigation.goToPreviousPage : "Previous page";
-  return createElement(main.Tooltip, {
+  return createElement(Tooltip, {
     ariaControlsSuffix: "page-navigation-previous",
-    position: main.Position.BottomCenter,
-    target: createElement(main.MinimalButton, { ariaLabel: label, isDisabled: isDisabled, testId: "page-navigation__previous-button", onClick: onClick }, createElement(PreviousIcon, null)),
+    position: Position.BottomCenter,
+    target: createElement(MinimalButton, { ariaLabel: label, isDisabled: isDisabled, testId: "page-navigation__previous-button", onClick: onClick }, createElement(PreviousIcon, null)),
     content: function () {
       return label;
     },
@@ -365,9 +373,9 @@ var GoToPreviousPage = function (_a) {
 var GoToPreviousPageMenuItem = function (_a) {
   var isDisabled = _a.isDisabled,
     onClick = _a.onClick;
-  var l10n = useContext(main.LocalizationContext).l10n;
+  var l10n = useContext(LocalizationContext).l10n;
   var label = l10n && l10n.pageNavigation ? l10n.pageNavigation.goToPreviousPage : "Previous page";
-  return createElement(main.MenuItem, { icon: createElement(PreviousIcon, null), isDisabled: isDisabled, testId: "page-navigation__previous-menu", onClick: onClick }, label);
+  return createElement(MenuItem, { icon: createElement(PreviousIcon, null), isDisabled: isDisabled, testId: "page-navigation__previous-menu", onClick: onClick }, label);
 };
 
 var NumberOfPages = function (_a) {
@@ -435,7 +443,7 @@ var ShortcutHandler = function (_a) {
       goToPreviousPage();
       return;
     }
-    var isCommandPressed = main.isMac() ? e.metaKey && !e.ctrlKey : e.altKey;
+    var isCommandPressed = isMac() ? e.metaKey && !e.ctrlKey : e.altKey;
     if (isCommandPressed) {
       switch (e.key) {
         case "ArrowLeft":
@@ -474,7 +482,7 @@ var usePageNavigationPlugin = function (props) {
     return Object.assign({}, { enableShortcuts: true }, props);
   }, []);
   var store = useMemo(function () {
-    return main.createStore();
+    return createStore();
   }, []);
   var CurrentPageInputDecorator = function () {
     return createElement(CurrentPageInput, { store: store });

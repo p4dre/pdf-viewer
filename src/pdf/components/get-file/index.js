@@ -1,9 +1,15 @@
 import { useState, useMemo, useContext, useEffect, createElement } from "react";
-import * as main from "../../../main";
+import Icon from "../../../Icon";
+import LocalizationContext from "../../../LocalizationContext";
+import Tooltip from "../../../Tooltip";
+import { Position } from "../../../enums";
+import MinimalButton from "../../../MinimalButton";
+import MenuItem from "../../../MenuItem";
+import { createStore } from "../../../utils";
 
 var DownloadIcon = function () {
   return createElement(
-    main.Icon,
+    Icon,
     { size: 16 },
     createElement("path", { d: "M5.5,11.5c-.275,0-.341.159-.146.354l6.292,6.293a.5.5,0,0,0,.709,0l6.311-6.275c.2-.193.13-.353-.145-.355L15.5,11.5V1.5a1,1,0,0,0-1-1h-5a1,1,0,0,0-1,1V11a.5.5,0,0,1-.5.5Z" }),
     createElement("path", { d: "M23.5,18.5v4a1,1,0,0,1-1,1H1.5a1,1,0,0,1-1-1v-4" })
@@ -26,12 +32,12 @@ var __assign = function () {
 var TOOLTIP_OFFSET = { left: 0, top: 8 };
 var DownloadButton = function (_a) {
   var onClick = _a.onClick;
-  var l10n = useContext(main.LocalizationContext).l10n;
+  var l10n = useContext(LocalizationContext).l10n;
   var label = l10n && l10n.download ? l10n.download.download : "Download";
-  return createElement(main.Tooltip, {
+  return createElement(Tooltip, {
     ariaControlsSuffix: "get-file",
-    position: main.Position.BottomCenter,
-    target: createElement(main.MinimalButton, { ariaLabel: label, testId: "get-file__download-button", onClick: onClick }, createElement(DownloadIcon, null)),
+    position: Position.BottomCenter,
+    target: createElement(MinimalButton, { ariaLabel: label, testId: "get-file__download-button", onClick: onClick }, createElement(DownloadIcon, null)),
     content: function () {
       return label;
     },
@@ -118,9 +124,9 @@ var Download = function (_a) {
 
 var DownloadMenuItem = function (_a) {
   var onClick = _a.onClick;
-  var l10n = useContext(main.LocalizationContext).l10n;
+  var l10n = useContext(LocalizationContext).l10n;
   var label = l10n && l10n.download ? l10n.download.download : "Download";
-  return createElement(main.MenuItem, { icon: createElement(DownloadIcon, null), testId: "get-file__download-menu", onClick: onClick }, label);
+  return createElement(MenuItem, { icon: createElement(DownloadIcon, null), testId: "get-file__download-menu", onClick: onClick }, label);
 };
 
 var getFileName = function (url) {
@@ -130,7 +136,7 @@ var getFileName = function (url) {
 
 var useGetFilePlugin = function (props) {
   var store = useMemo(function () {
-    return main.createStore({});
+    return createStore({});
   }, []);
   var defaultFileNameGenerator = function (file) {
     return file.name ? getFileName(file.name) : "document.pdf";

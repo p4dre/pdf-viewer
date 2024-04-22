@@ -1,21 +1,29 @@
 import { useState, useContext, useMemo, useCallback, useEffect, Fragment, createElement } from "react";
-import * as main from "../../../main";
+import Icon from "../../../Icon";
+import LocalizationContext from "../../../LocalizationContext";
+import ThemeContext from "../../../ThemeContext";
+import { isMac, isFullScreenEnabled, createStore } from "../../../utils";
+import Tooltip from "../../../Tooltip";
+import { Position, FullScreenMode, TextDirection } from "../../../enums";
+import MinimalButton from "../../../MinimalButton";
+import MenuItem from "../../../MenuItem";
+import Spinner from "../../../Spinner";
 
 var ExitFullScreenIcon = function () {
-  return createElement(
-    main.Icon,
-    { size: 16 },
-    createElement("path", { d: "M11.5 23.499L11.5 14.499" }),
-    createElement("path", { d: "M7.5 18.499L11.5 14.499 15.5 18.499" }),
-    createElement("path", { d: "M11.5 1.499L11.5 10.499" }),
-    createElement("path", { d: "M7.5 6.499L11.5 10.499 15.5 6.499" }),
-    createElement("path", { d: "M20.5 12.499L1.5 12.499" })
+  return (
+    <Icon size={16}>
+      <path d="M11.5 23.499L11.5 14.499" />
+      <path d="M7.5 18.499L11.5 14.499 15.5 18.499" />
+      <path d="M11.5 1.499L11.5 10.499" />
+      <path d="M7.5 6.499L11.5 10.499 15.5 6.499" />
+      <path d="M20.5 12.499L1.5 12.499" />
+    </Icon>
   );
 };
 
 var FullScreenIcon = function () {
   return createElement(
-    main.Icon,
+    Icon,
     { size: 16 },
     createElement("path", { d: "M0.5 12L23.5 12" }),
     createElement("path", { d: "M11.5 1L11.5 23" }),
@@ -43,13 +51,13 @@ var TOOLTIP_OFFSET$1 = { left: 0, top: 8 };
 var EnterFullScreenButton = function (_a) {
   var enableShortcuts = _a.enableShortcuts,
     onClick = _a.onClick;
-  var l10n = useContext(main.LocalizationContext).l10n;
+  var l10n = useContext(LocalizationContext).l10n;
   var label = l10n && l10n.fullScreen ? l10n.fullScreen.enterFullScreen : "Full screen";
-  var ariaKeyShortcuts = enableShortcuts ? (main.isMac() ? "Meta+Ctrl+F" : "F11") : "";
-  return createElement(main.Tooltip, {
+  var ariaKeyShortcuts = enableShortcuts ? (isMac() ? "Meta+Ctrl+F" : "F11") : "";
+  return createElement(Tooltip, {
     ariaControlsSuffix: "full-screen-enter",
-    position: main.Position.BottomCenter,
-    target: createElement(main.MinimalButton, { ariaKeyShortcuts: ariaKeyShortcuts, ariaLabel: label, isDisabled: !main.isFullScreenEnabled(), testId: "full-screen__enter-button", onClick: onClick }, createElement(FullScreenIcon, null)),
+    position: Position.BottomCenter,
+    target: createElement(MinimalButton, { ariaKeyShortcuts: ariaKeyShortcuts, ariaLabel: label, isDisabled: !isFullScreenEnabled(), testId: "full-screen__enter-button", onClick: onClick }, createElement(FullScreenIcon, null)),
     content: function () {
       return label;
     },
@@ -60,12 +68,12 @@ var EnterFullScreenButton = function (_a) {
 var TOOLTIP_OFFSET = { left: 0, top: 8 };
 var ExitFullScreenButtonWithTooltip = function (_a) {
   var onClick = _a.onClick;
-  var l10n = useContext(main.LocalizationContext).l10n;
+  var l10n = useContext(LocalizationContext).l10n;
   var exitFullScreenLabel = l10n && l10n.fullScreen ? l10n.fullScreen.exitFullScreen : "Exit full screen";
-  return createElement(main.Tooltip, {
+  return createElement(Tooltip, {
     ariaControlsSuffix: "full-screen-exit",
-    position: main.Position.BottomCenter,
-    target: createElement(main.MinimalButton, { ariaKeyShortcuts: "Esc", ariaLabel: exitFullScreenLabel, testId: "full-screen__exit-button-with-tooltip", onClick: onClick }, createElement(ExitFullScreenIcon, null)),
+    position: Position.BottomCenter,
+    target: createElement(MinimalButton, { ariaKeyShortcuts: "Esc", ariaLabel: exitFullScreenLabel, testId: "full-screen__exit-button-with-tooltip", onClick: onClick }, createElement(ExitFullScreenIcon, null)),
     content: function () {
       return exitFullScreenLabel;
     },
@@ -100,7 +108,7 @@ var useEnterFullScreen = function (getFullScreenTarget, store) {
   return {
     enterFullScreen: enterFullScreen,
     exitFullScreen: exitFullScreen,
-    isFullScreen: fullScreenMode === main.FullScreenMode.Entering || fullScreenMode === main.FullScreenMode.EnteredCompletely,
+    isFullScreen: fullScreenMode === FullScreenMode.Entering || fullScreenMode === FullScreenMode.EnteredCompletely,
   };
 };
 
@@ -124,27 +132,23 @@ var EnterFullScreen = function (_a) {
 
 var EnterFullScreenMenuItem = function (_a) {
   var onClick = _a.onClick;
-  var l10n = useContext(main.LocalizationContext).l10n;
+  var l10n = useContext(LocalizationContext).l10n;
   var label = l10n && l10n.fullScreen ? l10n.fullScreen.enterFullScreen : "Full screen";
-  return createElement(main.MenuItem, { icon: createElement(FullScreenIcon, null), isDisabled: !main.isFullScreenEnabled(), testId: "full-screen__enter-menu", onClick: onClick }, label);
+  return createElement(MenuItem, { icon: createElement(FullScreenIcon, null), isDisabled: !isFullScreenEnabled(), testId: "full-screen__enter-menu", onClick: onClick }, label);
 };
 
 var ExitFullScreenButton = function (_a) {
   var onClick = _a.onClick;
-  var l10n = useContext(main.LocalizationContext).l10n;
-  var direction = useContext(main.ThemeContext).direction;
-  var isRtl = direction === main.TextDirection.RightToLeft;
+  var l10n = useContext(LocalizationContext).l10n;
+  var direction = useContext(ThemeContext).direction;
+  var isRtl = direction === TextDirection.RightToLeft;
   var exitFullScreenLabel = l10n && l10n.fullScreen ? l10n.fullScreen.exitFullScreen : "Exit full screen";
-  return createElement(
-    "div",
-    {
-      className: main.classNames({
-        "rpv-full-screen__exit-button": true,
-        "rpv-full-screen__exit-button--ltr": !isRtl,
-        "rpv-full-screen__exit-button--rtl": isRtl,
-      }),
-    },
-    createElement(main.MinimalButton, { ariaLabel: exitFullScreenLabel, testId: "full-screen__exit-button", onClick: onClick }, createElement(ExitFullScreenIcon, null))
+  return (
+    <div className={`rpv-full-screen__exit-button ${!isRtl ? "rpv-full-screen__exit-button--ltr" : ""} ${isRtl ? "rpv-full-screen__exit-button--rtl" : ""}`}>
+      <MinimalButton ariaLabel={exitFullScreenLabel} onClick={onClick}>
+        <ExitFullScreenIcon />
+      </MinimalButton>
+    </div>
   );
 };
 
@@ -187,10 +191,10 @@ var FullScreenModeTracker = function (_a) {
   useEffect(
     function () {
       switch (fullScreenMode) {
-        case main.FullScreenMode.EnteredCompletely:
+        case FullScreenMode.EnteredCompletely:
           handleEnteredFullScreen();
           break;
-        case main.FullScreenMode.Exited:
+        case FullScreenMode.Exited:
           handleExitedFullScreen();
           break;
       }
@@ -203,7 +207,7 @@ var FullScreenModeTracker = function (_a) {
       store.unsubscribe("fullScreenMode", handleFullScreenMode);
     };
   }, []);
-  return (fullScreenMode === main.FullScreenMode.Entering || fullScreenMode === main.FullScreenMode.Entered) && createElement("div", { className: "rpv-full-screen__overlay" }, createElement(main.Spinner, null));
+  return (fullScreenMode === FullScreenMode.Entering || fullScreenMode === FullScreenMode.Entered) && createElement("div", { className: "rpv-full-screen__overlay" }, createElement(Spinner, null));
 };
 
 var ShortcutHandler = function (_a) {
@@ -215,7 +219,7 @@ var ShortcutHandler = function (_a) {
     if (e.shiftKey || e.altKey) {
       return;
     }
-    var areShortcutsPressed = main.isMac() ? e.metaKey && e.ctrlKey && e.key === "f" : e.key === "F11";
+    var areShortcutsPressed = isMac() ? e.metaKey && e.ctrlKey && e.key === "f" : e.key === "F11";
     if (!areShortcutsPressed) {
       return;
     }
@@ -251,10 +255,10 @@ var useFullScreenPlugin = function (props) {
     return Object.assign({}, { enableShortcuts: true, onEnterFullScreen: function () {}, onExitFullScreen: function () {} }, props);
   }, []);
   var store = useMemo(function () {
-    return main.createStore({
+    return createStore({
       enterFullScreenMode: function () {},
       exitFullScreenMode: function () {},
-      fullScreenMode: main.FullScreenMode.Normal,
+      fullScreenMode: FullScreenMode.Normal,
       zoom: function () {},
     });
   }, []);

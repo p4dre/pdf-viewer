@@ -1,7 +1,10 @@
 "use strict";
-import { useState, useEffect, useMemo, useRef, useContext, createElement } from "react";
-import * as main from "../../../main";
-
+import { useState, useEffect, useLayoutEffect, useMemo, useRef, useContext, createElement } from "react";
+import LocalizationContext from "../../../LocalizationContext";
+import ThemeContext from "../../../ThemeContext";
+import Spinner from "../../../Spinner";
+import { createStore } from "../../../utils";
+import { TextDirection } from "../../../enums";
 var getFileName = function (url) {
   var str = url.split("/").pop();
   return str ? str.split("#")[0].split("?")[0] : url;
@@ -24,9 +27,9 @@ var downloadFile = function (url, data) {
 var AttachmentList = function (_a) {
   var files = _a.files;
   var containerRef = useRef();
-  var l10n = useContext(main.LocalizationContext).l10n;
-  var direction = useContext(main.ThemeContext).direction;
-  var isRtl = direction === main.TextDirection.RightToLeft;
+  var l10n = useContext(LocalizationContext).l10n;
+  var direction = useContext(ThemeContext).direction;
+  var isRtl = direction === TextDirection.RightToLeft;
   var attachmentItemsRef = useRef([]);
   var clickDownloadLabel = l10n && l10n.attachment ? l10n.attachment.clickToDownload : "Click to download";
   var handleKeyDown = function (e) {
@@ -72,7 +75,7 @@ var AttachmentList = function (_a) {
     targetEle.setAttribute("tabindex", "0");
     targetEle.focus();
   };
-  main.useIsomorphicLayoutEffect(function () {
+  useLayoutEffect(function () {
     var container = containerRef.current;
     if (!container) {
       return;
@@ -85,42 +88,24 @@ var AttachmentList = function (_a) {
       firstItem.setAttribute("tabindex", "0");
     }
   }, []);
-  return createElement(
-    "div",
-    {
-      "data-testid": "attachment__list",
-      className: main.classNames({
-        "rpv-attachment__list": true,
-        "rpv-attachment__list--rtl": isRtl,
-      }),
-      ref: containerRef,
-      tabIndex: -1,
-      onKeyDown: handleKeyDown,
-    },
-    files.map(function (file) {
-      return createElement(
-        "button",
-        {
-          className: "rpv-attachment__item",
-          key: file.fileName,
-          tabIndex: -1,
-          title: clickDownloadLabel,
-          type: "button",
-          onClick: function () {
-            return downloadFile(file.fileName, file.data);
-          },
-        },
-        file.fileName
-      );
-    })
+  return (
+    <div ref={containerRef} tabIndex={-1} onKeyDown={handleKeyDown} className={`rpv-attachment__list ${isRtl ? "rpv-attachment__list--rtl" : ""}`}>
+      {files.map((file) => {
+        return (
+          <button key={file.fileName} tabIndex={-1} title={clickDownloadLabel} type="button" onClick={() => downloadFile(file.fileName, file.data)} className="rpv-attachment__item">
+            {file.name}
+          </button>
+        );
+      })}
+    </div>
   );
 };
 
 var AttachmentLoader = function (_a) {
   var doc = _a.doc;
-  var l10n = useContext(main.LocalizationContext).l10n;
-  var direction = useContext(main.ThemeContext).direction;
-  var isRtl = direction === main.TextDirection.RightToLeft;
+  var l10n = useContext(LocalizationContext).l10n;
+  var direction = useContext(ThemeContext).direction;
+  var isRtl = direction === TextDirection.RightToLeft;
   var noAttachmentLabel = l10n && l10n.attachment ? l10n.attachment.noAttachment : "There is no attachment";
   var _b = useState({
       files: [],
@@ -147,21 +132,8 @@ var AttachmentLoader = function (_a) {
     },
     [doc]
   );
-  return !attachments.isLoaded
-    ? createElement(main.Spinner, null)
-    : attachments.files.length === 0
-    ? createElement(
-        "div",
-        {
-          "data-testid": "attachment__empty",
-          className: main.classNames({
-            "rpv-attachment__empty": true,
-            "rpv-attachment__empty--rtl": isRtl,
-          }),
-        },
-        noAttachmentLabel
-      )
-    : createElement(AttachmentList, { files: attachments.files });
+  const noAttachment = <div className={`rpv-attachment__empty ${isRtl ? "rpv-attachment__empty--rtl" : ""} `}>{noAttachmentLabel}</div>;
+  return !attachments.isLoaded ? <Spinner /> : attachments.files.length === 0 ? noAttachment : <AttachmentList files={attachments.files} />;
 };
 
 var AttachmentListWithStore = function (_a) {
@@ -178,12 +150,18 @@ var AttachmentListWithStore = function (_a) {
       store.unsubscribe("doc", handleDocumentChanged);
     };
   }, []);
-  return currentDoc ? createElement(AttachmentLoader, { doc: currentDoc }) : createElement("div", { className: "rpv-attachment__loader" }, createElement(main.Spinner, null));
+  return currentDoc ? (
+    <AttachmentLoader doc={currentDoc} />
+  ) : (
+    <div className="rpv-attachment__loader">
+      <Spinner />
+    </div>
+  );
 };
 
 const useAttachmentPlugin = function () {
   var store = useMemo(function () {
-    return main.createStore({});
+    return createStore({});
   }, []);
   var AttachmentsDecorator = function () {
     return createElement(AttachmentListWithStore, { store: store });

@@ -1,5 +1,4 @@
 import { useContext, useMemo, Fragment, useCallback, createElement } from "react";
-import * as main from "../../../main";
 import * as selectionMode from "../selection-mode";
 import * as fullScreen from "../full-screen";
 import * as getFile from "../get-file";
@@ -12,10 +11,24 @@ import * as scrollMode from "../scroll-mode";
 import * as search from "../search";
 import * as theme from "../theme";
 import * as zoom from "../zoom";
+import Icon from "../../../Icon";
+import LocalizationContext from "../../../LocalizationContext";
+import ThemeContext from "../../../ThemeContext";
+import { TextDirection } from "../../../enums";
+import { Position } from "../../../enums";
+import Tooltip from "../../../Tooltip";
+import MinimalButton from "../../../MinimalButton";
+import Menu from "../../../Menu";
+import { ScrollMode, ViewMode } from "../../../enums";
+import Popover from "../../../Popover";
+
+const MenuDivider = function () {
+  return <div ariaOrientation="horizontal" className="rpv-core__menu-divider" role="separator"></div>;
+};
 
 var MoreIcon = function () {
   return createElement(
-    main.Icon,
+    Icon,
     { size: 16 },
     createElement("path", {
       d: "M12,0.5c1.381,0,2.5,1.119,2.5,2.5S13.381,5.5,12,5.5S9.5,4.381,9.5,3S10.619,0.5,12,0.5z\n            M12,9.5\n            c1.381,0,2.5,1.119,2.5,2.5s-1.119,2.5-2.5,2.5S9.5,13.381,9.5,12S10.619,9.5,12,9.5z\n            M12,18.5c1.381,0,2.5,1.119,2.5,2.5\n            s-1.119,2.5-2.5,2.5S9.5,22.381,9.5,21S10.619,18.5,12,18.5z",
@@ -26,9 +39,9 @@ var MoreIcon = function () {
 var PORTAL_OFFSET = { left: 0, top: 8 };
 var MoreActionsPopover = function (_a) {
   var toolbarSlot = _a.toolbarSlot;
-  var l10n = useContext(main.LocalizationContext).l10n;
-  var direction = useContext(main.ThemeContext).direction;
-  var portalPosition = direction === main.TextDirection.RightToLeft ? main.Position.BottomLeft : main.Position.BottomRight;
+  var l10n = useContext(LocalizationContext).l10n;
+  var direction = useContext(ThemeContext).direction;
+  var portalPosition = direction === TextDirection.RightToLeft ? Position.BottomLeft : Position.BottomRight;
   var DownloadMenuItem = toolbarSlot.DownloadMenuItem,
     EnterFullScreenMenuItem = toolbarSlot.EnterFullScreenMenuItem,
     GoToFirstPageMenuItem = toolbarSlot.GoToFirstPageMenuItem,
@@ -46,10 +59,10 @@ var MoreActionsPopover = function (_a) {
     SwitchThemeMenuItem = toolbarSlot.SwitchThemeMenuItem;
   var renderTarget = function (toggle, opened) {
     var label = l10n && l10n.toolbar ? l10n.toolbar.moreActions : "More actions";
-    return createElement(main.Tooltip, {
+    return createElement(Tooltip, {
       ariaControlsSuffix: "toolbar-more-actions",
       position: portalPosition,
-      target: createElement(main.MinimalButton, { ariaLabel: label, isSelected: opened, testId: "toolbar__more-actions-popover-target", onClick: toggle }, createElement(MoreIcon, null)),
+      target: createElement(MinimalButton, { ariaLabel: label, isSelected: opened, testId: "toolbar__more-actions-popover-target", onClick: toggle }, createElement(MoreIcon, null)),
       content: function () {
         return label;
       },
@@ -58,38 +71,38 @@ var MoreActionsPopover = function (_a) {
   };
   var renderContent = function (toggle) {
     return createElement(
-      main.Menu,
+      Menu,
       null,
       createElement("div", { className: "rpv-core__display--block rpv-core__display--hidden-medium" }, createElement(SwitchThemeMenuItem, { onClick: toggle })),
       createElement("div", { className: "rpv-core__display--block rpv-core__display--hidden-medium" }, createElement(EnterFullScreenMenuItem, { onClick: toggle })),
       createElement("div", { className: "rpv-core__display--block rpv-core__display--hidden-medium" }, createElement(OpenMenuItem, null)),
       createElement("div", { className: "rpv-core__display--block rpv-core__display--hidden-medium" }, createElement(PrintMenuItem, { onClick: toggle })),
       createElement("div", { className: "rpv-core__display--block rpv-core__display--hidden-medium" }, createElement(DownloadMenuItem, { onClick: toggle })),
-      createElement("div", { className: "rpv-core__display--block rpv-core__display--hidden-medium" }, createElement(main.MenuDivider, null)),
+      createElement("div", { className: "rpv-core__display--block rpv-core__display--hidden-medium" }, createElement(MenuDivider, null)),
       createElement(GoToFirstPageMenuItem, { onClick: toggle }),
       createElement("div", { className: "rpv-core__display--block rpv-core__display--hidden-medium" }, createElement(GoToPreviousPageMenuItem, { onClick: toggle })),
       createElement("div", { className: "rpv-core__display--block rpv-core__display--hidden-medium" }, createElement(GoToNextPageMenuItem, { onClick: toggle })),
       createElement(GoToLastPageMenuItem, { onClick: toggle }),
-      createElement(main.MenuDivider, null),
+      createElement(MenuDivider, null),
       createElement(RotateForwardMenuItem, { onClick: toggle }),
       createElement(RotateBackwardMenuItem, { onClick: toggle }),
-      createElement(main.MenuDivider, null),
+      createElement(MenuDivider, null),
       createElement(SwitchSelectionModeMenuItem, { mode: selectionMode.SelectionMode.Text, onClick: toggle }),
       createElement(SwitchSelectionModeMenuItem, { mode: selectionMode.SelectionMode.Hand, onClick: toggle }),
-      createElement(main.MenuDivider, null),
-      createElement(SwitchScrollModeMenuItem, { mode: main.ScrollMode.Page, onClick: toggle }),
-      createElement(SwitchScrollModeMenuItem, { mode: main.ScrollMode.Vertical, onClick: toggle }),
-      createElement(SwitchScrollModeMenuItem, { mode: main.ScrollMode.Horizontal, onClick: toggle }),
-      createElement(SwitchScrollModeMenuItem, { mode: main.ScrollMode.Wrapped, onClick: toggle }),
-      createElement(main.MenuDivider, null),
-      createElement("div", { className: "rpv-core__display--hidden rpv-core__display--block-small" }, createElement(SwitchViewModeMenuItem, { mode: main.ViewMode.SinglePage, onClick: toggle })),
-      createElement("div", { className: "rpv-core__display--hidden rpv-core__display--block-small" }, createElement(SwitchViewModeMenuItem, { mode: main.ViewMode.DualPage, onClick: toggle })),
-      createElement("div", { className: "rpv-core__display--hidden rpv-core__display--block-small" }, createElement(SwitchViewModeMenuItem, { mode: main.ViewMode.DualPageWithCover, onClick: toggle })),
-      createElement("div", { className: "rpv-core__display--hidden rpv-core__display--block-small" }, createElement(main.MenuDivider, null)),
+      createElement(MenuDivider, null),
+      createElement(SwitchScrollModeMenuItem, { mode: ScrollMode.Page, onClick: toggle }),
+      createElement(SwitchScrollModeMenuItem, { mode: ScrollMode.Vertical, onClick: toggle }),
+      createElement(SwitchScrollModeMenuItem, { mode: ScrollMode.Horizontal, onClick: toggle }),
+      createElement(SwitchScrollModeMenuItem, { mode: ScrollMode.Wrapped, onClick: toggle }),
+      createElement(MenuDivider, null),
+      createElement("div", { className: "rpv-core__display--hidden rpv-core__display--block-small" }, createElement(SwitchViewModeMenuItem, { mode: ViewMode.SinglePage, onClick: toggle })),
+      createElement("div", { className: "rpv-core__display--hidden rpv-core__display--block-small" }, createElement(SwitchViewModeMenuItem, { mode: ViewMode.DualPage, onClick: toggle })),
+      createElement("div", { className: "rpv-core__display--hidden rpv-core__display--block-small" }, createElement(SwitchViewModeMenuItem, { mode: ViewMode.DualPageWithCover, onClick: toggle })),
+      createElement("div", { className: "rpv-core__display--hidden rpv-core__display--block-small" }, createElement(MenuDivider, null)),
       createElement(ShowPropertiesMenuItem, { onClick: toggle })
     );
   };
-  return createElement(main.Popover, { ariaControlsSuffix: "toolbar-more-actions", ariaHasPopup: "menu", position: portalPosition, target: renderTarget, content: renderContent, offset: PORTAL_OFFSET, closeOnClickOutside: true, closeOnEscape: true });
+  return createElement(Popover, { ariaControlsSuffix: "toolbar-more-actions", ariaHasPopup: "menu", position: portalPosition, target: renderTarget, content: renderContent, offset: PORTAL_OFFSET, closeOnClickOutside: true, closeOnEscape: true });
 };
 
 var __assign = function () {
@@ -110,8 +123,8 @@ var renderDefaultToolbar = function (transformToolbarSlot) {
     var toolbarSlot = useMemo(function () {
       return transformToolbarSlot(defaultToolbarSlot);
     }, []);
-    var direction = useContext(main.ThemeContext).direction;
-    var isRtl = direction === main.TextDirection.RightToLeft;
+    var direction = useContext(ThemeContext).direction;
+    var isRtl = direction === TextDirection.RightToLeft;
     var CurrentPageInput = toolbarSlot.CurrentPageInput,
       Download = toolbarSlot.Download,
       EnterFullScreen = toolbarSlot.EnterFullScreen,
@@ -297,53 +310,50 @@ var useToolbarPlugin = function (props) {
       ZoomInMenuItem = zoomPluginInstance.ZoomInMenuItem,
       ZoomOut = zoomPluginInstance.ZoomOut,
       ZoomOutMenuItem = zoomPluginInstance.ZoomOutMenuItem;
-    return createElement(
-      Toolbar,
-      __assign({}, props, {
-        slot: {
-          CurrentPageInput: CurrentPageInput,
-          CurrentPageLabel: CurrentPageLabel,
-          CurrentScale: CurrentScale,
-          Download: Download,
-          DownloadMenuItem: DownloadMenuItem,
-          EnterFullScreen: EnterFullScreen,
-          EnterFullScreenMenuItem: EnterFullScreenMenuItem,
-          GoToFirstPage: GoToFirstPage,
-          GoToFirstPageMenuItem: GoToFirstPageMenuItem,
-          GoToLastPage: GoToLastPage,
-          GoToLastPageMenuItem: GoToLastPageMenuItem,
-          GoToNextPage: GoToNextPage,
-          GoToNextPageMenuItem: GoToNextPageMenuItem,
-          GoToPreviousPage: GoToPreviousPage,
-          GoToPreviousPageMenuItem: GoToPreviousPageMenuItem,
-          NumberOfPages: NumberOfPages,
-          Open: Open,
-          OpenMenuItem: OpenMenuItem,
-          Print: Print,
-          PrintMenuItem: PrintMenuItem,
-          Rotate: Rotate,
-          RotateBackwardMenuItem: RotateBackwardMenuItem,
-          RotateForwardMenuItem: RotateForwardMenuItem,
-          Search: Search,
-          ShowProperties: ShowProperties,
-          ShowPropertiesMenuItem: ShowPropertiesMenuItem,
-          ShowSearchPopover: ShowSearchPopover,
-          SwitchScrollMode: SwitchScrollMode,
-          SwitchScrollModeMenuItem: SwitchScrollModeMenuItem,
-          SwitchSelectionMode: SwitchSelectionMode,
-          SwitchSelectionModeMenuItem: SwitchSelectionModeMenuItem,
-          SwitchViewMode: SwitchViewMode,
-          SwitchViewModeMenuItem: SwitchViewModeMenuItem,
-          SwitchTheme: SwitchTheme,
-          SwitchThemeMenuItem: SwitchThemeMenuItem,
-          Zoom: Zoom,
-          ZoomIn: ZoomIn,
-          ZoomInMenuItem: ZoomInMenuItem,
-          ZoomOut: ZoomOut,
-          ZoomOutMenuItem: ZoomOutMenuItem,
-        },
-      })
-    );
+
+    const myProps = {
+      CurrentPageInput: CurrentPageInput,
+      CurrentPageLabel: CurrentPageLabel,
+      CurrentScale: CurrentScale,
+      Download: Download,
+      DownloadMenuItem: DownloadMenuItem,
+      EnterFullScreen: EnterFullScreen,
+      EnterFullScreenMenuItem: EnterFullScreenMenuItem,
+      GoToFirstPage: GoToFirstPage,
+      GoToFirstPageMenuItem: GoToFirstPageMenuItem,
+      GoToLastPage: GoToLastPage,
+      GoToLastPageMenuItem: GoToLastPageMenuItem,
+      GoToNextPage: GoToNextPage,
+      GoToNextPageMenuItem: GoToNextPageMenuItem,
+      GoToPreviousPage: GoToPreviousPage,
+      GoToPreviousPageMenuItem: GoToPreviousPageMenuItem,
+      NumberOfPages: NumberOfPages,
+      Open: Open,
+      OpenMenuItem: OpenMenuItem,
+      Print: Print,
+      PrintMenuItem: PrintMenuItem,
+      Rotate: Rotate,
+      RotateBackwardMenuItem: RotateBackwardMenuItem,
+      RotateForwardMenuItem: RotateForwardMenuItem,
+      Search: Search,
+      ShowProperties: ShowProperties,
+      ShowPropertiesMenuItem: ShowPropertiesMenuItem,
+      ShowSearchPopover: ShowSearchPopover,
+      SwitchScrollMode: SwitchScrollMode,
+      SwitchScrollModeMenuItem: SwitchScrollModeMenuItem,
+      SwitchSelectionMode: SwitchSelectionMode,
+      SwitchSelectionModeMenuItem: SwitchSelectionModeMenuItem,
+      SwitchViewMode: SwitchViewMode,
+      SwitchViewModeMenuItem: SwitchViewModeMenuItem,
+      SwitchTheme: SwitchTheme,
+      SwitchThemeMenuItem: SwitchThemeMenuItem,
+      Zoom: Zoom,
+      ZoomIn: ZoomIn,
+      ZoomInMenuItem: ZoomInMenuItem,
+      ZoomOut: ZoomOut,
+      ZoomOutMenuItem: ZoomOutMenuItem,
+    };
+    return <Toolbar slot={myProps} {...props} />;
   }, []);
   return {
     fullScreenPluginInstance: fullScreenPluginInstance,

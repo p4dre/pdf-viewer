@@ -1,13 +1,14 @@
 import { useMemo, useRef, useEffect, useContext, Fragment, createElement } from "react";
-import * as main from "../../../main";
+import Icon from "../../../Icon";
+import LocalizationContext from "../../../LocalizationContext";
+import { Position } from "../../../enums";
+import { isMac, createStore } from "../../../utils";
+import Tooltip from "../../../Tooltip";
+import MinimalButton from "../../../MinimalButton";
+import MenuItem from "../../../MenuItem";
 
 var OpenFileIcon = function () {
-  return createElement(
-    main.Icon,
-    { size: 16 },
-    createElement("path", { d: "M18.5,7.5c.275,0,.341-.159.146-.354L12.354.854a.5.5,0,0,0-.708,0L5.354,7.147c-.2.195-.129.354.146.354h3v10a1,1,0,0,0,1,1h5a1,1,0,0,0,1-1V7.5Z" }),
-    createElement("path", { d: "M23.5,18.5v4a1,1,0,0,1-1,1H1.5a1,1,0,0,1-1-1v-4" })
-  );
+  return createElement(Icon, { size: 16 }, createElement("path", { d: "M18.5,7.5c.275,0,.341-.159.146-.354L12.354.854a.5.5,0,0,0-.708,0L5.354,7.147c-.2.195-.129.354.146.354h3v10a1,1,0,0,0,1,1h5a1,1,0,0,0,1-1V7.5Z" }), createElement("path", { d: "M23.5,18.5v4a1,1,0,0,1-1,1H1.5a1,1,0,0,1-1-1v-4" }));
 };
 
 var __assign = function () {
@@ -56,20 +57,20 @@ var OpenButton = function (_a) {
   var enableShortcuts = _a.enableShortcuts,
     store = _a.store,
     onClick = _a.onClick;
-  var l10n = useContext(main.LocalizationContext).l10n;
+  var l10n = useContext(LocalizationContext).l10n;
   var label = l10n && l10n.open ? l10n.open.openFile : "Open file";
   var _b = useTriggerOpen(store),
     inputRef = _b.inputRef,
     openFile = _b.openFile;
-  var ariaKeyShortcuts = enableShortcuts ? (main.isMac() ? "Meta+O" : "Ctrl+O") : "";
-  return createElement(main.Tooltip, {
+  var ariaKeyShortcuts = enableShortcuts ? (isMac() ? "Meta+O" : "Ctrl+O") : "";
+  return createElement(Tooltip, {
     ariaControlsSuffix: "open",
-    position: main.Position.BottomCenter,
+    position: Position.BottomCenter,
     target: createElement(
       "div",
       { className: "rpv-open__input-wrapper" },
       createElement("input", { accept: ".pdf", ref: inputRef, className: "rpv-open__input", multiple: false, tabIndex: -1, title: "", type: "file", onChange: onClick }),
-      createElement(main.MinimalButton, { ariaKeyShortcuts: ariaKeyShortcuts, ariaLabel: label, testId: "open__button", onClick: openFile }, createElement(OpenFileIcon, null))
+      createElement(MinimalButton, { ariaKeyShortcuts: ariaKeyShortcuts, ariaLabel: label, testId: "open__button", onClick: openFile }, createElement(OpenFileIcon, null))
     ),
     content: function () {
       return label;
@@ -104,13 +105,13 @@ var Open = function (_a) {
 var OpenMenuItem = function (_a) {
   var store = _a.store,
     onClick = _a.onClick;
-  var l10n = useContext(main.LocalizationContext).l10n;
+  var l10n = useContext(LocalizationContext).l10n;
   var label = l10n && l10n.open ? l10n.open.openFile : "Open file";
   var _b = useTriggerOpen(store),
     inputRef = _b.inputRef,
     openFile = _b.openFile;
   return createElement(
-    main.MenuItem,
+    MenuItem,
     { icon: createElement(OpenFileIcon, null), testId: "open__menu", onClick: openFile },
     createElement("div", { className: "rpv-open__input-wrapper" }, createElement("input", { accept: ".pdf", ref: inputRef, className: "rpv-open__input", multiple: false, tabIndex: -1, title: "", type: "file", onChange: onClick }), label)
   );
@@ -123,7 +124,7 @@ var ShortcutHandler = function (_a) {
     if (e.shiftKey || e.altKey || e.key !== "o") {
       return;
     }
-    var isCommandPressed = main.isMac() ? e.metaKey : e.ctrlKey;
+    var isCommandPressed = isMac() ? e.metaKey : e.ctrlKey;
     if (!isCommandPressed) {
       return;
     }
@@ -155,7 +156,7 @@ var useOpenPlugin = function (props) {
     return Object.assign({}, { enableShortcuts: true }, props);
   }, []);
   var store = useMemo(function () {
-    return main.createStore({});
+    return createStore({});
   }, []);
   var OpenDecorator = function (props) {
     return createElement(Open, __assign({ enableShortcuts: openPluginProps.enableShortcuts }, props, { store: store }));

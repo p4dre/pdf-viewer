@@ -1,9 +1,15 @@
 import { useContext, createElement } from "react";
-import * as main from "../../../main";
+import Icon from "../../../Icon";
+import ThemeContext from "../../../ThemeContext";
+import LocalizationContext from "../../../LocalizationContext";
+import Tooltip from "../../../Tooltip";
+import { Position } from "../../../enums";
+import MinimalButton from "../../../MinimalButton";
+import MenuItem from "../../../MenuItem";
 
 var DarkIcon = function () {
   return createElement(
-    main.Icon,
+    Icon,
     { size: 16 },
     createElement("path", { d: "M19.5,15.106l2.4-2.4a1,1,0,0,0,0-1.414l-2.4-2.4V5.5a1,1,0,0,0-1-1H15.106l-2.4-2.4a1,1,0,0,0-1.414,0l-2.4,2.4H5.5a1,1,0,0,0-1,1V8.894l-2.4,2.4a1,1,0,0,0,0,1.414l2.4,2.4V18.5a1,1,0,0,0,1,1H8.894l2.4,2.4a1,1,0,0,0,1.414,0l2.4-2.4H18.5a1,1,0,0,0,1-1Z" }),
     createElement("path", { d: "M10,6.349a6,6,0,0,1,0,11.3,6,6,0,1,0,0-11.3Z" })
@@ -12,7 +18,7 @@ var DarkIcon = function () {
 
 var LightIcon = function () {
   return createElement(
-    main.Icon,
+    Icon,
     { size: 16 },
     createElement("path", { d: "M19.491,15.106l2.4-2.4a1,1,0,0,0,0-1.414l-2.4-2.4V5.5a1,1,0,0,0-1-1H15.1L12.7,2.1a1,1,0,0,0-1.414,0l-2.4,2.4H5.491a1,1,0,0,0-1,1V8.894l-2.4,2.4a1,1,0,0,0,0,1.414l2.4,2.4V18.5a1,1,0,0,0,1,1H8.885l2.4,2.4a1,1,0,0,0,1.414,0l2.4-2.4h3.394a1,1,0,0,0,1-1Z" }),
     createElement("path", { d: "M11.491,6c4,0,6,2.686,6,6s-2,6-6,6Z" })
@@ -35,14 +41,14 @@ var __assign = function () {
 var TOOLTIP_OFFSET = { left: 0, top: 8 };
 var SwitchThemeButton = function (_a) {
   var onClick = _a.onClick;
-  var theme = useContext(main.ThemeContext);
-  var l10n = useContext(main.LocalizationContext).l10n;
+  var theme = useContext(ThemeContext);
+  var l10n = useContext(LocalizationContext).l10n;
   var isDarkTheme = theme.currentTheme === "dark";
   var label = l10n && l10n.theme ? (isDarkTheme ? l10n.theme.switchLightTheme : l10n.theme.switchDarkTheme) : isDarkTheme ? "Switch to the light theme" : "Switch to the dark theme";
-  return createElement(main.Tooltip, {
+  return createElement(Tooltip, {
     ariaControlsSuffix: "theme-switch",
-    position: main.Position.BottomCenter,
-    target: createElement(main.MinimalButton, { ariaLabel: label, testId: "theme__switch-button", onClick: onClick }, isDarkTheme ? createElement(LightIcon, null) : createElement(DarkIcon, null)),
+    position: Position.BottomCenter,
+    target: createElement(MinimalButton, { ariaLabel: label, testId: "theme__switch-button", onClick: onClick }, isDarkTheme ? createElement(LightIcon, null) : createElement(DarkIcon, null)),
     content: function () {
       return label;
     },
@@ -52,7 +58,7 @@ var SwitchThemeButton = function (_a) {
 
 var SwitchTheme = function (_a) {
   var children = _a.children;
-  var theme = useContext(main.ThemeContext);
+  var theme = useContext(ThemeContext);
   var defaultChildern = function (props) {
     return createElement(SwitchThemeButton, { onClick: props.onClick });
   };
@@ -66,11 +72,11 @@ var SwitchTheme = function (_a) {
 
 var SwitchThemeMenuItem = function (_a) {
   var onClick = _a.onClick;
-  var theme = useContext(main.ThemeContext);
-  var l10n = useContext(main.LocalizationContext).l10n;
+  var theme = useContext(ThemeContext);
+  var l10n = useContext(LocalizationContext).l10n;
   var isDarkTheme = theme.currentTheme === "dark";
   var label = l10n && l10n.theme ? (isDarkTheme ? l10n.theme.switchLightTheme : l10n.theme.switchDarkTheme) : isDarkTheme ? "Switch to the light theme" : "Switch to the dark theme";
-  return createElement(main.MenuItem, { icon: isDarkTheme ? createElement(LightIcon, null) : createElement(DarkIcon, null), testId: "theme__switch-menu", onClick: onClick }, label);
+  return createElement(MenuItem, { icon: isDarkTheme ? createElement(LightIcon, null) : createElement(DarkIcon, null), testId: "theme__switch-menu", onClick: onClick }, label);
 };
 
 var useThemePlugin = function () {

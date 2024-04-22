@@ -1,16 +1,37 @@
-import { useState, useEffect, useRef, useMemo, useContext, Fragment, useCallback, createElement } from "react";
-import * as main from "../../../main";
+import { useState, useEffect, useLayoutEffect, useRef, useMemo, useContext, Fragment, useCallback, createElement } from "react";
+import Icon from "../../../Icon";
+import LocalizationContext from "../../../LocalizationContext";
+import ThemeContext from "../../../ThemeContext";
+import { TextDirection } from "../../../enums";
+import TextBox from "../../../TextBox";
+import Spinner from "../../../Spinner";
+import Tooltip from "../../../Tooltip";
+import MinimalButton from "../../../MinimalButton";
+import Button from "../../../Button";
+import { Position, LayerRenderStatus } from "../../../enums";
+import { isMac, getPage, createStore } from "../../../utils";
+import Popover from "../../../Popover";
+
+var classNames = function (classes) {
+  var result = [];
+  Object.keys(classes).forEach(function (clazz) {
+    if (clazz && classes[clazz]) {
+      result.push(clazz);
+    }
+  });
+  return result.join(" ");
+};
 
 var NextIcon = function () {
-  return createElement(main.Icon, { size: 16 }, createElement("path", { d: "M0.541,5.627L11.666,18.2c0.183,0.207,0.499,0.226,0.706,0.043c0.015-0.014,0.03-0.028,0.043-0.043\n            L23.541,5.627" }));
+  return createElement(Icon, { size: 16 }, createElement("path", { d: "M0.541,5.627L11.666,18.2c0.183,0.207,0.499,0.226,0.706,0.043c0.015-0.014,0.03-0.028,0.043-0.043\n            L23.541,5.627" }));
 };
 
 var PreviousIcon = function () {
-  return createElement(main.Icon, { size: 16 }, createElement("path", { d: "M23.535,18.373L12.409,5.8c-0.183-0.207-0.499-0.226-0.706-0.043C11.688,5.77,11.674,5.785,11.66,5.8\n            L0.535,18.373" }));
+  return createElement(Icon, { size: 16 }, createElement("path", { d: "M23.535,18.373L12.409,5.8c-0.183-0.207-0.499-0.226-0.706-0.043C11.688,5.77,11.674,5.785,11.66,5.8\n            L0.535,18.373" }));
 };
 
 var SearchIcon = function () {
-  return createElement(main.Icon, { ignoreDirection: true, size: 16 }, createElement("path", { d: "M10.5,0.5c5.523,0,10,4.477,10,10s-4.477,10-10,10s-10-4.477-10-10S4.977,0.5,10.5,0.5z\n            M23.5,23.5\n            l-5.929-5.929" }));
+  return createElement(Icon, { ignoreDirection: true, size: 16 }, createElement("path", { d: "M10.5,0.5c5.523,0,10,4.477,10,10s-4.477,10-10,10s-10-4.477-10-10S4.977,0.5,10.5,0.5z\n            M23.5,23.5\n            l-5.929-5.929" }));
 };
 
 var __assign = function () {
@@ -61,7 +82,7 @@ var HightlightItem = function (_a) {
     area = _a.area,
     onHighlightKeyword = _a.onHighlightKeyword;
   var containerRef = useRef();
-  main.useIsomorphicLayoutEffect(function () {
+  useLayoutEffect(function () {
     var highlightEle = containerRef.current;
     if (onHighlightKeyword && highlightEle) {
       onHighlightKeyword({
@@ -139,7 +160,7 @@ var Highlights = function (_a) {
   var _d = useState({
       pageIndex: pageIndex,
       scale: 1,
-      status: main.LayerRenderStatus.PreRender,
+      status: LayerRenderStatus.PreRender,
     }),
     renderStatus = _d[0],
     setRenderStatus = _d[1];
@@ -274,7 +295,7 @@ var Highlights = function (_a) {
   };
   useEffect(
     function () {
-      if (isEmptyKeyword() || renderStatus.status !== main.LayerRenderStatus.DidRender || characterIndexesRef.current.length) {
+      if (isEmptyKeyword() || renderStatus.status !== LayerRenderStatus.DidRender || characterIndexesRef.current.length) {
         return;
       }
       var textLayerEle = renderStatus.ele;
@@ -310,7 +331,7 @@ var Highlights = function (_a) {
   );
   useEffect(
     function () {
-      if (isEmptyKeyword() || !renderStatus.ele || renderStatus.status !== main.LayerRenderStatus.DidRender || !targetPageFilter()({ pageIndex: pageIndex, numPages: numPages })) {
+      if (isEmptyKeyword() || !renderStatus.ele || renderStatus.status !== LayerRenderStatus.DidRender || !targetPageFilter()({ pageIndex: pageIndex, numPages: numPages })) {
         return;
       }
       var textLayerEle = renderStatus.ele;
@@ -321,7 +342,7 @@ var Highlights = function (_a) {
   );
   useEffect(
     function () {
-      if (isEmptyKeyword() && renderStatus.ele && renderStatus.status === main.LayerRenderStatus.DidRender) {
+      if (isEmptyKeyword() && renderStatus.ele && renderStatus.status === LayerRenderStatus.DidRender) {
         setHighlightAreas([]);
       }
     },
@@ -333,7 +354,7 @@ var Highlights = function (_a) {
         return;
       }
       var container = containerRef.current;
-      if (matchPosition.pageIndex !== pageIndex || !container || renderStatus.status !== main.LayerRenderStatus.DidRender) {
+      if (matchPosition.pageIndex !== pageIndex || !container || renderStatus.status !== LayerRenderStatus.DidRender) {
         return;
       }
       var highlightEle = container.querySelector('.rpv-search__highlight[data-index="'.concat(matchPosition.matchIndex, '"]'));
@@ -526,8 +547,7 @@ var useSearch = function (store) {
     var promises = Array(currentDoc.numPages)
       .fill(0)
       .map(function (_, pageIndex) {
-        return main
-          .getPage(currentDoc, pageIndex)
+        return getPage(currentDoc, pageIndex)
           .then(function (page) {
             return page.getTextContent();
           })
@@ -688,7 +708,7 @@ var ShortcutHandler = function (_a) {
     if (e.shiftKey || e.altKey || e.key !== "f") {
       return;
     }
-    var isCommandPressed = main.isMac() ? e.metaKey && !e.ctrlKey : e.ctrlKey;
+    var isCommandPressed = isMac() ? e.metaKey && !e.ctrlKey : e.ctrlKey;
     if (!isCommandPressed) {
       return;
     }
@@ -721,15 +741,15 @@ var PORTAL_OFFSET$1 = { left: 0, top: 8 };
 var SearchPopover = function (_a) {
   var store = _a.store,
     onToggle = _a.onToggle;
-  var l10n = useContext(main.LocalizationContext).l10n;
-  var direction = useContext(main.ThemeContext).direction;
+  var l10n = useContext(LocalizationContext).l10n;
+  var direction = useContext(ThemeContext).direction;
   var _b = useState(false),
     isQuerying = _b[0],
     setIsQuerying = _b[1];
   var _c = useState(false),
     searchDone = _c[0],
     setSearchDone = _c[1];
-  var isRtl = direction === main.TextDirection.RightToLeft;
+  var isRtl = direction === TextDirection.RightToLeft;
   var _d = useSearch(store),
     clearKeyword = _d.clearKeyword,
     changeMatchCase = _d.changeMatchCase,
@@ -790,17 +810,17 @@ var SearchPopover = function (_a) {
     createElement(
       "div",
       { className: "rpv-search__popover-input-counter" },
-      createElement(main.TextBox, { ariaLabel: searchLabel, autoFocus: true, placeholder: searchLabel, type: "text", value: keyword, onChange: onChangeKeyword, onKeyDown: onKeydownSearch }),
+      createElement(TextBox, { ariaLabel: searchLabel, autoFocus: true, placeholder: searchLabel, type: "text", value: keyword, onChange: onChangeKeyword, onKeyDown: onKeydownSearch }),
       createElement(
         "div",
         {
-          className: main.classNames({
+          className: classNames({
             "rpv-search__popover-counter": true,
             "rpv-search__popover-counter--ltr": !isRtl,
             "rpv-search__popover-counter--rtl": isRtl,
           }),
         },
-        isQuerying && createElement(main.Spinner, { testId: "search__popover-searching", size: "1rem" }),
+        isQuerying && createElement(Spinner, { testId: "search__popover-searching", size: "1rem" }),
         !isQuerying && createElement("span", { "data-testid": "search__popover-num-matches" }, currentMatch, "/", numberOfMatches)
       )
     ),
@@ -824,10 +844,10 @@ var SearchPopover = function (_a) {
       createElement(
         "div",
         { className: "rpv-search__popover-footer-item" },
-        createElement(main.Tooltip, {
+        createElement(Tooltip, {
           ariaControlsSuffix: "search-previous-match",
-          position: isRtl ? main.Position.BottomRight : main.Position.BottomCenter,
-          target: createElement(main.MinimalButton, { ariaLabel: previousMatchLabel, isDisabled: currentMatch <= 1, onClick: jumpToPreviousMatch }, createElement(PreviousIcon, null)),
+          position: isRtl ? Position.BottomRight : Position.BottomCenter,
+          target: createElement(MinimalButton, { ariaLabel: previousMatchLabel, isDisabled: currentMatch <= 1, onClick: jumpToPreviousMatch }, createElement(PreviousIcon, null)),
           content: function () {
             return previousMatchLabel;
           },
@@ -837,10 +857,10 @@ var SearchPopover = function (_a) {
       createElement(
         "div",
         { className: "rpv-search__popover-footer-item" },
-        createElement(main.Tooltip, {
+        createElement(Tooltip, {
           ariaControlsSuffix: "search-next-match",
-          position: main.Position.BottomCenter,
-          target: createElement(main.MinimalButton, { ariaLabel: nextMatchLabel, isDisabled: currentMatch > numberOfMatches - 1, onClick: jumpToNextMatch }, createElement(NextIcon, null)),
+          position: Position.BottomCenter,
+          target: createElement(MinimalButton, { ariaLabel: nextMatchLabel, isDisabled: currentMatch > numberOfMatches - 1, onClick: jumpToNextMatch }, createElement(NextIcon, null)),
           content: function () {
             return nextMatchLabel;
           },
@@ -850,13 +870,13 @@ var SearchPopover = function (_a) {
       createElement(
         "div",
         {
-          className: main.classNames({
+          className: classNames({
             "rpv-search__popover-footer-button": true,
             "rpv-search__popover-footer-button--ltr": !isRtl,
             "rpv-search__popover-footer-button--rtl": isRtl,
           }),
         },
-        createElement(main.Button, { onClick: onClose }, closeButtonLabel)
+        createElement(Button, { onClick: onClose }, closeButtonLabel)
       )
     )
   );
@@ -865,7 +885,7 @@ var SearchPopover = function (_a) {
 var ShowSearchPopoverDecorator = function (_a) {
   var children = _a.children,
     onClick = _a.onClick;
-  var l10n = useContext(main.LocalizationContext).l10n;
+  var l10n = useContext(LocalizationContext).l10n;
   var label = l10n && l10n.search ? l10n.search.search : "Search";
   var icon = createElement(SearchIcon, null);
   return children({ icon: icon, label: label, onClick: onClick });
@@ -876,7 +896,7 @@ var ShowSearchPopoverButton = function (_a) {
   var enableShortcuts = _a.enableShortcuts,
     store = _a.store,
     onClick = _a.onClick;
-  var ariaKeyShortcuts = enableShortcuts ? (main.isMac() ? "Meta+F" : "Ctrl+F") : "";
+  var ariaKeyShortcuts = enableShortcuts ? (isMac() ? "Meta+F" : "Ctrl+F") : "";
   var handleShortcutsPressed = function (areShortcutsPressed) {
     if (areShortcutsPressed) {
       onClick();
@@ -889,10 +909,10 @@ var ShowSearchPopoverButton = function (_a) {
     };
   }, []);
   return createElement(ShowSearchPopoverDecorator, { onClick: onClick }, function (p) {
-    return createElement(main.Tooltip, {
+    return createElement(Tooltip, {
       ariaControlsSuffix: "search-popover",
-      position: main.Position.BottomCenter,
-      target: createElement(main.MinimalButton, { ariaKeyShortcuts: ariaKeyShortcuts, ariaLabel: p.label, testId: "search__popover-button", onClick: onClick }, p.icon),
+      position: Position.BottomCenter,
+      target: createElement(MinimalButton, { ariaKeyShortcuts: ariaKeyShortcuts, ariaLabel: p.label, testId: "search__popover-button", onClick: onClick }, p.icon),
       content: function () {
         return p.label;
       },
@@ -906,13 +926,13 @@ var ShowSearchPopover = function (_a) {
   var children = _a.children,
     enableShortcuts = _a.enableShortcuts,
     store = _a.store;
-  var direction = useContext(main.ThemeContext).direction;
-  var portalPosition = direction === main.TextDirection.RightToLeft ? main.Position.BottomRight : main.Position.BottomLeft;
+  var direction = useContext(ThemeContext).direction;
+  var portalPosition = direction === TextDirection.RightToLeft ? Position.BottomRight : Position.BottomLeft;
   var defaultChildren = function (props) {
     return createElement(ShowSearchPopoverButton, __assign({ enableShortcuts: enableShortcuts, store: store }, props));
   };
   var render = children || defaultChildren;
-  return createElement(main.Popover, {
+  return createElement(Popover, {
     ariaControlsSuffix: "search",
     lockScroll: false,
     position: portalPosition,
@@ -942,7 +962,7 @@ var useSearchPlugin = function (props) {
     return Object.assign({}, { enableShortcuts: true, onHighlightKeyword: function () {} }, props);
   }, []);
   var store = useMemo(function () {
-    return main.createStore({
+    return createStore({
       initialKeyword: props && props.keyword ? (Array.isArray(props.keyword) ? props.keyword : [props.keyword]) : [],
       keyword: props && props.keyword ? normalizeKeywords(props.keyword) : [EMPTY_KEYWORD_REGEXP],
       matchPosition: {

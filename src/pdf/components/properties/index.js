@@ -1,9 +1,24 @@
 import { useState, useMemo, useEffect, useContext, Fragment, createElement } from "react";
-import * as main from "../../../main";
+import Icon from "../../../Icon";
+import Spinner from "../../../Spinner";
+import LocalizationContext from "../../../LocalizationContext";
+import ThemeContext from "../../../ThemeContext";
+import { TextDirection } from "../../../enums";
+import Tooltip from "../../../Tooltip";
+import { Position } from "../../../enums";
+import MinimalButton from "../../../MinimalButton";
+import Modal from "../../../Modal";
+import MenuItem from "../../../MenuItem";
+import { createStore } from "../../../utils";
+import Button from "../../../Button";
+
+const Separator = function () {
+  return <div className="rpv-core__separator"></div>;
+};
 
 var InfoIcon = function () {
   return createElement(
-    main.Icon,
+    Icon,
     { size: 16 },
     createElement("path", {
       d: "M12,1.001c6.075,0,11,4.925,11,11s-4.925,11-11,11s-11-4.925-11-11S5.925,1.001,12,1.001z\n            M14.5,17.005H13\n            c-0.552,0-1-0.448-1-1v-6.5c0-0.276-0.224-0.5-0.5-0.5H10\n            M11.745,6.504L11.745,6.504\n            M11.745,6.5c-0.138,0-0.25,0.112-0.25,0.25\n            S11.607,7,11.745,7s0.25-0.112,0.25-0.25S11.883,6.5,11.745,6.5",
@@ -49,24 +64,19 @@ var PropertiesLoader = function (_a) {
         setData(response);
       });
   }, []);
-  return data ? render(data) : createElement("div", { className: "rpv-properties__loader" }, createElement(main.Spinner, null));
+  return data ? render(data) : createElement("div", { className: "rpv-properties__loader" }, createElement(Spinner, null));
 };
 
 var PropertyItem = function (_a) {
   var label = _a.label,
     value = _a.value;
-  var direction = useContext(main.ThemeContext).direction;
-  var isRtl = direction === main.TextDirection.RightToLeft;
-  return createElement(
-    "dl",
-    {
-      className: main.classNames({
-        "rpv-properties__item": true,
-        "rpv-properties__item--rtl": isRtl,
-      }),
-    },
-    createElement("dt", { className: "rpv-properties__item-label" }, label, ":"),
-    createElement("dd", { className: "rpv-properties__item-value" }, value || "-")
+  var direction = useContext(ThemeContext).direction;
+  var isRtl = direction === TextDirection.RightToLeft;
+  return (
+    <dl className={`rpv-properties__item ${isRtl ? "rpv-properties__item--rtl" : ""}`}>
+      <dt className="rpv-properties__item-label">{label}:</dt>
+      <dd className="rpv-properties__item-value">{value || "-"}</dd>
+    </dl>
   );
 };
 
@@ -117,7 +127,7 @@ var PropertiesModal = function (_a) {
   var doc = _a.doc,
     fileName = _a.fileName,
     onToggle = _a.onToggle;
-  var l10n = useContext(main.LocalizationContext).l10n;
+  var l10n = useContext(LocalizationContext).l10n;
   var formatDate = function (input) {
     var date = convertDate(input);
     return date ? "".concat(date.toLocaleDateString(), ", ").concat(date.toLocaleTimeString()) : "";
@@ -132,7 +142,7 @@ var PropertiesModal = function (_a) {
         createElement(PropertyItem, { label: l10n && l10n.properties ? l10n.properties.fileName : "File name", value: data.fileName || getFileName(fileName) }),
         createElement(PropertyItem, { label: l10n && l10n.properties ? l10n.properties.fileSize : "File size", value: getFileSize(data.length) })
       ),
-      createElement(main.Separator, null),
+      createElement(Separator, null),
       createElement(
         "div",
         { className: "rpv-properties__modal-section" },
@@ -144,7 +154,7 @@ var PropertiesModal = function (_a) {
         createElement(PropertyItem, { label: l10n && l10n.properties ? l10n.properties.creationDate : "Creation date", value: formatDate(data.info.CreationDate) }),
         createElement(PropertyItem, { label: l10n && l10n.properties ? l10n.properties.modificationDate : "Modification date", value: formatDate(data.info.ModDate) })
       ),
-      createElement(main.Separator, null),
+      createElement(Separator, null),
       createElement(
         "div",
         { className: "rpv-properties__modal-section" },
@@ -158,19 +168,19 @@ var PropertiesModal = function (_a) {
     "div",
     { className: "rpv-properties__modal" },
     createElement(PropertiesLoader, { doc: doc, render: renderData }),
-    createElement("div", { className: "rpv-properties__modal-footer" }, createElement(main.Button, { onClick: onToggle }, l10n && l10n.properties ? l10n.properties.close : "Close"))
+    createElement("div", { className: "rpv-properties__modal-footer" }, createElement(Button, { onClick: onToggle }, l10n && l10n.properties ? l10n.properties.close : "Close"))
   );
 };
 
 var TOOLTIP_OFFSET = { left: 0, top: 8 };
 var ShowPropertiesButton = function (_a) {
   var onClick = _a.onClick;
-  var l10n = useContext(main.LocalizationContext).l10n;
+  var l10n = useContext(LocalizationContext).l10n;
   var label = l10n && l10n.properties ? l10n.properties.showProperties : "Show properties";
-  return createElement(main.Tooltip, {
+  return createElement(Tooltip, {
     ariaControlsSuffix: "properties",
-    position: main.Position.BottomCenter,
-    target: createElement(main.MinimalButton, { ariaLabel: label, testId: "properties__button", onClick: onClick }, createElement(InfoIcon, null)),
+    position: Position.BottomCenter,
+    target: createElement(MinimalButton, { ariaLabel: label, testId: "properties__button", onClick: onClick }, createElement(InfoIcon, null)),
     content: function () {
       return label;
     },
@@ -204,7 +214,7 @@ var ShowProperties = function (_a) {
   };
   var render = children || defaultChildren;
   return currentDoc
-    ? createElement(main.Modal, {
+    ? createElement(Modal, {
         ariaControlsSuffix: "properties",
         target: function (toggle) {
           return render({
@@ -222,14 +232,14 @@ var ShowProperties = function (_a) {
 
 var ShowPropertiesMenuItem = function (_a) {
   var onClick = _a.onClick;
-  var l10n = useContext(main.LocalizationContext).l10n;
+  var l10n = useContext(LocalizationContext).l10n;
   var label = l10n && l10n.properties ? l10n.properties.showProperties : "Show properties";
-  return createElement(main.MenuItem, { icon: createElement(InfoIcon, null), testId: "properties__menu", onClick: onClick }, label);
+  return createElement(MenuItem, { icon: createElement(InfoIcon, null), testId: "properties__menu", onClick: onClick }, label);
 };
 
 var usePropertiesPlugin = function () {
   var store = useMemo(function () {
-    return main.createStore({
+    return createStore({
       fileName: "",
     });
   }, []);

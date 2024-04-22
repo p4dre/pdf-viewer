@@ -1,17 +1,24 @@
 import { useRef, useState, useContext, useMemo, useEffect, createElement } from "react";
-import * as main from "../../../main";
+import Icon from "../../../Icon";
+import LocalizationContext from "../../../LocalizationContext";
+import { ScrollMode, ViewMode } from "../../../enums";
+import Tooltip from "../../../Tooltip";
+import { Position } from "../../../enums";
+import MinimalButton from "../../../MinimalButton";
+import MenuItem from "../../../MenuItem";
+import { createStore } from "../../../utils";
 
 var DualPageCoverViewModeIcon = function () {
-  return createElement(main.Icon, { size: 16 }, createElement("rect", { x: "0.5", y: "0.497", width: "22", height: "22", rx: "1", ry: "1" }), createElement("line", { x1: "0.5", y1: "6.497", x2: "22.5", y2: "6.497" }), createElement("line", { x1: "11.5", y1: "6.497", x2: "11.5", y2: "22.497" }));
+  return createElement(Icon, { size: 16 }, createElement("rect", { x: "0.5", y: "0.497", width: "22", height: "22", rx: "1", ry: "1" }), createElement("line", { x1: "0.5", y1: "6.497", x2: "22.5", y2: "6.497" }), createElement("line", { x1: "11.5", y1: "6.497", x2: "11.5", y2: "22.497" }));
 };
 
 var DualPageViewModeIcon = function () {
-  return createElement(main.Icon, { size: 16 }, createElement("rect", { x: "0.5", y: "0.497", width: "22", height: "22", rx: "1", ry: "1" }), createElement("line", { x1: "11.5", y1: "0.497", x2: "11.5", y2: "22.497" }));
+  return createElement(Icon, { size: 16 }, createElement("rect", { x: "0.5", y: "0.497", width: "22", height: "22", rx: "1", ry: "1" }), createElement("line", { x1: "11.5", y1: "0.497", x2: "11.5", y2: "22.497" }));
 };
 
 var HorizontalScrollingIcon = function () {
   return createElement(
-    main.Icon,
+    Icon,
     { size: 16 },
     createElement("path", {
       d: "M6.5,21.5c0,0.552-0.448,1-1,1h-4c-0.552,0-1-0.448-1-1v-20c0-0.552,0.448-1,1-1h4c0.552,0,1,0.448,1,1V21.5z\n            M14.5,21.5c0,0.552-0.448,1-1,1h-4c-0.552,0-1-0.448-1-1v-20c0-0.552,0.448-1,1-1h4c0.552,0,1,0.448,1,1V21.5z\n            M22.5,21.5 c0,0.552-0.448,1-1,1h-4c-0.552,0-1-0.448-1-1v-20c0-0.552,0.448-1,1-1h4c0.552,0,1,0.448,1,1V21.5z",
@@ -20,7 +27,7 @@ var HorizontalScrollingIcon = function () {
 };
 
 var PageScrollingIcon = function () {
-  return createElement(main.Icon, { size: 16 }, createElement("rect", { x: "0.5", y: "0.497", width: "22", height: "22", rx: "1", ry: "1" }));
+  return createElement(Icon, { size: 16 }, createElement("rect", { x: "0.5", y: "0.497", width: "22", height: "22", rx: "1", ry: "1" }));
 };
 
 var __assign = function () {
@@ -39,14 +46,14 @@ var __assign = function () {
 var switchScrollMode = function (store, scrollMode) {
   store.get("switchScrollMode")(scrollMode);
   var currentViewMode = store.get("viewMode");
-  if ((scrollMode === main.ScrollMode.Horizontal || scrollMode === main.ScrollMode.Wrapped) && currentViewMode !== main.ViewMode.SinglePage) {
-    store.get("switchViewMode")(main.ViewMode.SinglePage);
+  if ((scrollMode === ScrollMode.Horizontal || scrollMode === ScrollMode.Wrapped) && currentViewMode !== ViewMode.SinglePage) {
+    store.get("switchViewMode")(ViewMode.SinglePage);
   }
 };
 
 var VerticalScrollingIcon = function () {
   return createElement(
-    main.Icon,
+    Icon,
     { size: 16 },
     createElement("path", {
       d: "M23.5,5.5c0,0.552-0.448,1-1,1h-21c-0.552,0-1-0.448-1-1v-3c0-0.552,0.448-1,1-1h21c0.552,0,1,0.448,1,1V5.5z\n            M23.5,13.5c0,0.552-0.448,1-1,1h-21c-0.552,0-1-0.448-1-1v-3c0-0.552,0.448-1,1-1h21c0.552,0,1,0.448,1,1V13.5z\n            M23.5,21.5 c0,0.552-0.448,1-1,1h-21c-0.552,0-1-0.448-1-1v-3c0-0.552,0.448-1,1-1h21c0.552,0,1,0.448,1,1V21.5z",
@@ -56,7 +63,7 @@ var VerticalScrollingIcon = function () {
 
 var WrappedScrollingIcon = function () {
   return createElement(
-    main.Icon,
+    Icon,
     { size: 16 },
     createElement("path", {
       d: "M10.5,9.5c0,0.552-0.448,1-1,1h-8c-0.552,0-1-0.448-1-1v-8c0-0.552,0.448-1,1-1h8c0.552,0,1,0.448,1,1V9.5z\n            M23.5,9.5c0,0.552-0.448,1-1,1h-8c-0.552,0-1-0.448-1-1v-8c0-0.552,0.448-1,1-1h8c0.552,0,1,0.448,1,1V9.5z\n            M10.5,22.5 c0,0.552-0.448,1-1,1h-8c-0.552,0-1-0.448-1-1v-8c0-0.552,0.448-1,1-1h8c0.552,0,1,0.448,1,1V22.5z\n            M23.5,22.5c0,0.552-0.448,1-1,1 h-8c-0.552,0-1-0.448-1-1v-8c0-0.552,0.448-1,1-1h8c0.552,0,1,0.448,1,1V22.5z",
@@ -68,23 +75,23 @@ var SwitchScrollModeDecorator = function (_a) {
   var children = _a.children,
     mode = _a.mode,
     onClick = _a.onClick;
-  var l10n = useContext(main.LocalizationContext).l10n;
+  var l10n = useContext(LocalizationContext).l10n;
   var label = "";
   var icon = createElement(VerticalScrollingIcon, null);
   switch (mode) {
-    case main.ScrollMode.Horizontal:
+    case ScrollMode.Horizontal:
       label = l10n && l10n.scrollMode ? l10n.scrollMode.horizontalScrolling : "Horizontal scrolling";
       icon = createElement(HorizontalScrollingIcon, null);
       break;
-    case main.ScrollMode.Page:
+    case ScrollMode.Page:
       label = l10n && l10n.scrollMode ? l10n.scrollMode.pageScrolling : "Page scrolling";
       icon = createElement(PageScrollingIcon, null);
       break;
-    case main.ScrollMode.Wrapped:
+    case ScrollMode.Wrapped:
       label = l10n && l10n.scrollMode ? l10n.scrollMode.wrappedScrolling : "Wrapped scrolling";
       icon = createElement(WrappedScrollingIcon, null);
       break;
-    case main.ScrollMode.Vertical:
+    case ScrollMode.Vertical:
     default:
       label = l10n && l10n.scrollMode ? l10n.scrollMode.verticalScrolling : "Vertical scrolling";
       icon = createElement(VerticalScrollingIcon, null);
@@ -101,25 +108,25 @@ var SwitchScrollModeButton = function (_a) {
     onClick = _a.onClick;
   var testId = "";
   switch (mode) {
-    case main.ScrollMode.Horizontal:
+    case ScrollMode.Horizontal:
       testId = "scroll-mode__horizontal-button";
       break;
-    case main.ScrollMode.Page:
+    case ScrollMode.Page:
       testId = "scroll-mode__page-button";
       break;
-    case main.ScrollMode.Wrapped:
+    case ScrollMode.Wrapped:
       testId = "scroll-mode__wrapped-button";
       break;
-    case main.ScrollMode.Vertical:
+    case ScrollMode.Vertical:
     default:
       testId = "scroll-mode__vertical-button";
       break;
   }
   return createElement(SwitchScrollModeDecorator, { mode: mode, onClick: onClick }, function (props) {
-    return createElement(main.Tooltip, {
+    return createElement(Tooltip, {
       ariaControlsSuffix: "scroll-mode-switch",
-      position: main.Position.BottomCenter,
-      target: createElement(main.MinimalButton, { ariaLabel: props.label, isDisabled: isDisabled, isSelected: isSelected, testId: testId, onClick: props.onClick }, props.icon),
+      position: Position.BottomCenter,
+      target: createElement(MinimalButton, { ariaLabel: props.label, isDisabled: isDisabled, isSelected: isSelected, testId: testId, onClick: props.onClick }, props.icon),
       content: function () {
         return props.label;
       },
@@ -129,7 +136,7 @@ var SwitchScrollModeButton = function (_a) {
 };
 
 var useScrollMode = function (store) {
-  var _a = useState(store.get("scrollMode") || main.ScrollMode.Vertical),
+  var _a = useState(store.get("scrollMode") || ScrollMode.Vertical),
     scrollMode = _a[0],
     setScrollMode = _a[1];
   var handleScrollModeChanged = function (currentScrollMode) {
@@ -145,7 +152,7 @@ var useScrollMode = function (store) {
 };
 
 var useViewMode = function (store) {
-  var _a = useState(store.get("viewMode") || main.ViewMode.SinglePage),
+  var _a = useState(store.get("viewMode") || ViewMode.SinglePage),
     viewMode = _a[0],
     setViewMode = _a[1];
   var handleViewModeChanged = function (currentViewMode) {
@@ -170,7 +177,7 @@ var SwitchScrollMode = function (_a) {
     switchScrollMode(store, mode);
   };
   var isSelected = scrollMode === mode;
-  var isDisabled = (mode === main.ScrollMode.Horizontal || mode === main.ScrollMode.Wrapped) && viewMode !== main.ViewMode.SinglePage;
+  var isDisabled = (mode === ScrollMode.Horizontal || mode === ScrollMode.Wrapped) && viewMode !== ViewMode.SinglePage;
   var defaultChildren = function (props) {
     return createElement(SwitchScrollModeButton, { isDisabled: isDisabled, isSelected: isSelected, mode: props.mode, onClick: props.onClick });
   };
@@ -190,30 +197,30 @@ var SwitchScrollModeMenuItem = function (_a) {
     onClick = _a.onClick;
   var testId = "";
   switch (mode) {
-    case main.ScrollMode.Horizontal:
+    case ScrollMode.Horizontal:
       testId = "scroll-mode__horizontal-menu";
       break;
-    case main.ScrollMode.Page:
+    case ScrollMode.Page:
       testId = "scroll-mode__page-menu";
       break;
-    case main.ScrollMode.Wrapped:
+    case ScrollMode.Wrapped:
       testId = "scroll-mode__wrapped-menu";
       break;
-    case main.ScrollMode.Vertical:
+    case ScrollMode.Vertical:
     default:
       testId = "scroll-mode__vertical-menu";
       break;
   }
   return createElement(SwitchScrollModeDecorator, { mode: mode, onClick: onClick }, function (props) {
-    return createElement(main.MenuItem, { checked: isSelected, icon: props.icon, isDisabled: isDisabled, testId: testId, onClick: props.onClick }, props.label);
+    return createElement(MenuItem, { checked: isSelected, icon: props.icon, isDisabled: isDisabled, testId: testId, onClick: props.onClick }, props.label);
   });
 };
 
 var switchViewMode = function (store, viewMode) {
   store.get("switchViewMode")(viewMode);
   var currentScrollMode = store.get("scrollMode");
-  if ((currentScrollMode === main.ScrollMode.Horizontal || currentScrollMode === main.ScrollMode.Wrapped) && viewMode !== main.ViewMode.SinglePage) {
-    store.get("switchScrollMode")(main.ScrollMode.Vertical);
+  if ((currentScrollMode === ScrollMode.Horizontal || currentScrollMode === ScrollMode.Wrapped) && viewMode !== ViewMode.SinglePage) {
+    store.get("switchScrollMode")(ScrollMode.Vertical);
   }
 };
 
@@ -221,19 +228,19 @@ var SwitchViewModeDecorator = function (_a) {
   var children = _a.children,
     mode = _a.mode,
     onClick = _a.onClick;
-  var l10n = useContext(main.LocalizationContext).l10n;
+  var l10n = useContext(LocalizationContext).l10n;
   var label = "";
   var icon = createElement(PageScrollingIcon, null);
   switch (mode) {
-    case main.ViewMode.DualPage:
+    case ViewMode.DualPage:
       label = l10n && l10n.scrollMode ? l10n.scrollMode.dualPage : "Dual page";
       icon = createElement(DualPageViewModeIcon, null);
       break;
-    case main.ViewMode.DualPageWithCover:
+    case ViewMode.DualPageWithCover:
       label = l10n && l10n.scrollMode ? l10n.scrollMode.dualPageCover : "Dual page with cover";
       icon = createElement(DualPageCoverViewModeIcon, null);
       break;
-    case main.ViewMode.SinglePage:
+    case ViewMode.SinglePage:
     default:
       label = l10n && l10n.scrollMode ? l10n.scrollMode.singlePage : "Single page";
       icon = createElement(PageScrollingIcon, null);
@@ -250,22 +257,22 @@ var SwitchViewModeButton = function (_a) {
     onClick = _a.onClick;
   var testId = "";
   switch (mode) {
-    case main.ViewMode.DualPage:
+    case ViewMode.DualPage:
       testId = "view-mode__dual-button";
       break;
-    case main.ViewMode.DualPageWithCover:
+    case ViewMode.DualPageWithCover:
       testId = "view-mode__dual-cover-button";
       break;
-    case main.ViewMode.SinglePage:
+    case ViewMode.SinglePage:
     default:
       testId = "view-mode__single-button";
       break;
   }
   return createElement(SwitchViewModeDecorator, { mode: mode, onClick: onClick }, function (props) {
-    return createElement(main.Tooltip, {
+    return createElement(Tooltip, {
       ariaControlsSuffix: "view-mode-switch",
-      position: main.Position.BottomCenter,
-      target: createElement(main.MinimalButton, { ariaLabel: props.label, isDisabled: isDisabled, isSelected: isSelected, testId: testId, onClick: props.onClick }, props.icon),
+      position: Position.BottomCenter,
+      target: createElement(MinimalButton, { ariaLabel: props.label, isDisabled: isDisabled, isSelected: isSelected, testId: testId, onClick: props.onClick }, props.icon),
       content: function () {
         return props.label;
       },
@@ -284,7 +291,7 @@ var SwitchViewMode = function (_a) {
     switchViewMode(store, mode);
   };
   var isSelected = viewMode === mode;
-  var isDisabled = (scrollMode === main.ScrollMode.Horizontal || scrollMode === main.ScrollMode.Wrapped) && mode !== main.ViewMode.SinglePage;
+  var isDisabled = (scrollMode === ScrollMode.Horizontal || scrollMode === ScrollMode.Wrapped) && mode !== ViewMode.SinglePage;
   var defaultChildren = function (props) {
     return createElement(SwitchViewModeButton, { isDisabled: isDisabled, isSelected: isSelected, mode: props.mode, onClick: props.onClick });
   };
@@ -304,27 +311,27 @@ var SwitchViewModeMenuItem = function (_a) {
     onClick = _a.onClick;
   var testId = "";
   switch (mode) {
-    case main.ViewMode.DualPage:
+    case ViewMode.DualPage:
       testId = "view-mode__dual-menu";
       break;
-    case main.ViewMode.DualPageWithCover:
+    case ViewMode.DualPageWithCover:
       testId = "view-mode__dual-cover-menu";
       break;
-    case main.ViewMode.SinglePage:
+    case ViewMode.SinglePage:
     default:
       testId = "view-mode__single-menu";
       break;
   }
   return createElement(SwitchViewModeDecorator, { mode: mode, onClick: onClick }, function (props) {
-    return createElement(main.MenuItem, { checked: isSelected, icon: props.icon, isDisabled: isDisabled, testId: testId, onClick: props.onClick }, props.label);
+    return createElement(MenuItem, { checked: isSelected, icon: props.icon, isDisabled: isDisabled, testId: testId, onClick: props.onClick }, props.label);
   });
 };
 
 var useScrollModePlugin = function () {
   var store = useMemo(function () {
-    return main.createStore({
-      scrollMode: main.ScrollMode.Vertical,
-      viewMode: main.ViewMode.SinglePage,
+    return createStore({
+      scrollMode: ScrollMode.Vertical,
+      viewMode: ViewMode.SinglePage,
       switchScrollMode: function () {},
       switchViewMode: function () {},
     });

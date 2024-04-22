@@ -1,9 +1,15 @@
 import { useState, useContext, useRef, useEffect, Fragment, useMemo, createElement } from "react";
-import * as main from "../../../main";
+import Icon from "../../../Icon";
+import LocalizationContext from "../../../LocalizationContext";
+import MinimalButton from "../../../MinimalButton";
+import Tooltip from "../../../Tooltip";
+import MenuItem from "../../../MenuItem";
+import { createStore } from "../../../utils";
+import { Position } from "../../../enums";
 
 var HandToolIcon = function () {
   return createElement(
-    main.Icon,
+    Icon,
     { size: 16 },
     createElement("path", {
       d: "M11.5,5.5v-2C11.5,2.672,12.172,2,13,2s1.5,0.672,1.5,1.5v2 M14.5,11.5v-6C14.5,4.672,15.172,4,16,4\n            c0.828,0,1.5,0.672,1.5,1.5v3 M17.5,13V8.5C17.5,7.672,18.172,7,19,7s1.5,0.672,1.5,1.5v10c0,2.761-2.239,5-5,5h-3.335\n            c-1.712-0.001-3.305-0.876-4.223-2.321C6.22,18.467,4.083,14,4.083,14c-0.378-0.545-0.242-1.292,0.303-1.67\n            c0.446-0.309,1.044-0.281,1.458,0.07L8.5,15.5v-10C8.5,4.672,9.172,4,10,4s1.5,0.672,1.5,1.5v6",
@@ -32,7 +38,7 @@ let SelectionMode;
 
 var TextSelectionIcon = function () {
   return createElement(
-    main.Icon,
+    Icon,
     { size: 16 },
     createElement("path", {
       d: "M13.675,11.671l2.941-2.941c0.195-0.196,0.195-0.512-0.001-0.707C16.563,7.971,16.5,7.931,16.43,7.906\n            L4.168,3.527C3.908,3.434,3.622,3.57,3.529,3.83c-0.039,0.109-0.039,0.228,0,0.336l4.379,12.262\n            c0.093,0.26,0.379,0.396,0.639,0.303c0.07-0.025,0.133-0.065,0.185-0.117l2.943-2.943l6.146,6.146c0.195,0.195,0.512,0.195,0.707,0\n            l1.293-1.293c0.195-0.195,0.195-0.512,0-0.707L13.675,11.671z",
@@ -44,7 +50,7 @@ var SwitchSelectionModeDecorator = function (_a) {
   var children = _a.children,
     mode = _a.mode,
     onClick = _a.onClick;
-  var l10n = useContext(main.LocalizationContext).l10n;
+  var l10n = useContext(LocalizationContext).l10n;
   var label = "";
   var icon = createElement(TextSelectionIcon, null);
   switch (mode) {
@@ -76,10 +82,10 @@ var SwitchSelectionModeButton = function (_a) {
       testId = "selection-mode__text-button";
   }
   return createElement(SwitchSelectionModeDecorator, { mode: mode, onClick: onClick }, function (props) {
-    return createElement(main.Tooltip, {
+    return createElement(Tooltip, {
       ariaControlsSuffix: "selection-mode-switch",
-      position: main.Position.BottomCenter,
-      target: createElement(main.MinimalButton, { ariaLabel: props.label, isSelected: isSelected, testId: testId, onClick: props.onClick }, props.icon),
+      position: Position.BottomCenter,
+      target: createElement(MinimalButton, { ariaLabel: props.label, isSelected: isSelected, testId: testId, onClick: props.onClick }, props.icon),
       content: function () {
         return props.label;
       },
@@ -121,7 +127,7 @@ var SwitchSelectionModeMenuItem = function (_a) {
       testId = "selection-mode__text-menu";
   }
   return createElement(SwitchSelectionModeDecorator, { mode: mode, onClick: onClick }, function (props) {
-    return createElement(main.MenuItem, { checked: isSelected, icon: props.icon, testId: testId, onClick: props.onClick }, props.label);
+    return createElement(MenuItem, { checked: isSelected, icon: props.icon, testId: testId, onClick: props.onClick }, props.label);
   });
 };
 
@@ -201,7 +207,7 @@ var Tracker = function (_a) {
 
 var useSelectionModePlugin = function (props) {
   var store = useMemo(function () {
-    return main.createStore();
+    return createStore();
   }, []);
   var SwitchSelectionModeDecorator = function (props) {
     return createElement(SwitchSelectionMode, __assign({}, props, { store: store }));
