@@ -1,6 +1,6 @@
 import { useState, useEffect, Fragment, createElement } from "react";
 import AnnotationLayerBody from "./AnnotationLayerBody";
-import useIsMounted from "./hooks/useIsMounted";
+import useIsMounted from "../hooks/useIsMounted";
 var AnnotationLoader = function (_a) {
   var page = _a.page,
     renderAnnotations = _a.renderAnnotations;

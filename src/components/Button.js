@@ -1,6 +1,6 @@
 import { useContext } from "react";
-import ThemeContext from "./ThemeContext";
-import { TextDirection } from "./enums";
+import ThemeContext from "../context/ThemeContext";
+import { TextDirection } from "../enums";
 
 const Button = (props) => {
   const { children, onClick, testId } = props;

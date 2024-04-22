@@ -3,12 +3,12 @@ import * as attachment from "./pdf/components/attachments";
 import * as bookmark from "./pdf/components/bookmark";
 import * as thumbnail from "./pdf/components/thumbnail";
 import * as toolbar from "./pdf/components/toolbar";
-import LocalizationContext from "./LocalizationContext";
-import ThemeContext from "./ThemeContext";
+import LocalizationContext from "./context/LocalizationContext";
+import ThemeContext from "./context/ThemeContext";
 import { PageMode, TextDirection, Position } from "./enums";
-import Tooltip from "./Tooltip";
-import MinimalButton from "./MinimalButton";
-import Icon from "./Icon";
+import Tooltip from "./components/Tooltip";
+import MinimalButton from "./components/MinimalButton";
+import Icon from "./components/Icon";
 
 var classNames = function (classes) {
   var result = [];

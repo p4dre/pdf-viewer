@@ -1,16 +1,16 @@
 import { useState, useEffect, useLayoutEffect, useRef, useMemo, useContext, Fragment, useCallback, createElement } from "react";
-import Icon from "../../../Icon";
-import LocalizationContext from "../../../LocalizationContext";
-import ThemeContext from "../../../ThemeContext";
+import Icon from "../../../components/Icon";
+import LocalizationContext from "../../../context/LocalizationContext";
+import ThemeContext from "../../../context/ThemeContext";
 import { TextDirection } from "../../../enums";
-import TextBox from "../../../TextBox";
-import Spinner from "../../../Spinner";
-import Tooltip from "../../../Tooltip";
-import MinimalButton from "../../../MinimalButton";
-import Button from "../../../Button";
+import TextBox from "../../../components/TextBox";
+import Spinner from "../../../components/Spinner";
+import Tooltip from "../../../components/Tooltip";
+import MinimalButton from "../../../components/MinimalButton";
+import Button from "../../../components/Button";
 import { Position, LayerRenderStatus } from "../../../enums";
 import { isMac, getPage, createStore } from "../../../utils";
-import Popover from "../../../Popover";
+import Popover from "../../../components/Popover";
 
 var classNames = function (classes) {
   var result = [];

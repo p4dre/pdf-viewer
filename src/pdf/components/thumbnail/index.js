@@ -2,13 +2,13 @@ import { useRef, useState, createElement, Fragment, useEffect, useLayoutEffect, 
 import useIsMounted from "../../../hooks/useIsMounted";
 import useIntersectionObserver from "../../../hooks/useIntersectionObserver";
 import { getPage, createStore, chunk } from "../../../utils";
-import Spinner from "../../../Spinner";
-import LocalizationContext from "../../../LocalizationContext";
-import ThemeContext from "../../../ThemeContext";
+import Spinner from "../../../components/Spinner";
+import LocalizationContext from "../../../context/LocalizationContext";
+import ThemeContext from "../../../context/ThemeContext";
 import { TextDirection, ViewMode } from "../../../enums";
 import usePrevious from "../../../hooks/usePrevious";
 import useRenderQueue from "../../../hooks/useRenderQueue";
-import LazyRender from "../../../LazyRender";
+import LazyRender from "../../../components/LazyRender";
 
 var classNames = function (classes) {
   var result = [];

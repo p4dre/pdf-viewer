@@ -1,13 +1,13 @@
 import { useState, useContext, useMemo, useCallback, useEffect, Fragment, createElement } from "react";
-import Icon from "../../../Icon";
-import LocalizationContext from "../../../LocalizationContext";
-import ThemeContext from "../../../ThemeContext";
+import Icon from "../../../components/Icon";
+import LocalizationContext from "../../../context/LocalizationContext";
+import ThemeContext from "../../../context/ThemeContext";
 import { isMac, isFullScreenEnabled, createStore } from "../../../utils";
-import Tooltip from "../../../Tooltip";
+import Tooltip from "../../../components/Tooltip";
 import { Position, FullScreenMode, TextDirection } from "../../../enums";
-import MinimalButton from "../../../MinimalButton";
-import MenuItem from "../../../MenuItem";
-import Spinner from "../../../Spinner";
+import MinimalButton from "../../../components/MinimalButton";
+import MenuItem from "../../../components/MenuItem";
+import Spinner from "../../../components/Spinner";
 
 var ExitFullScreenIcon = function () {
   return (

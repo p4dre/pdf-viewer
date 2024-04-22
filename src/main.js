@@ -1,14 +1,14 @@
 "use strict";
 import { useState, useEffect, useLayoutEffect, useMemo, useRef, createElement } from "react";
 import * as PdfJsApi from "pdfjs-dist/build/pdf";
-import DocumentLoader from "./DocumentLoader";
-import Inner from "./Inner";
+import DocumentLoader from "./components/DocumentLoader";
+import Inner from "./components/Inner";
 import useIntersectionObserver from "./hooks/useIntersectionObserver";
 import usePrevious from "./hooks/usePrevious";
 import { FullScreenMode, TextDirection, SpecialZoomLevel, ViewMode, ScrollMode } from "./enums";
-import ThemeContext from "./ThemeContext";
-import LocalizationContext from "./LocalizationContext";
-import Spinner from "./Spinner";
+import ThemeContext from "./context/ThemeContext";
+import LocalizationContext from "./context/LocalizationContext";
+import Spinner from "./components/Spinner";
 import { getPage } from "./utils";
 
 PdfJsApi.GlobalWorkerOptions.workerSrc = "https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js";

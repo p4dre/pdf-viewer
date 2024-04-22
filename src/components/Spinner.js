@@ -1,5 +1,5 @@
 import { useState } from "react";
-import useIntersectionObserver from "./hooks/useIntersectionObserver";
+import useIntersectionObserver from "../hooks/useIntersectionObserver";
 
 var Spinner = function (props) {
   const { size = "4em", testId } = props;

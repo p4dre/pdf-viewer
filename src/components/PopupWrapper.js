@@ -1,5 +1,5 @@
 import { useRef, useContext, useLayoutEffect, createElement, Fragment } from "react";
-import ThemeContext from "./ThemeContext";
+import ThemeContext from "../context/ThemeContext";
 
 let AnnotationType;
 (function (AnnotationType) {

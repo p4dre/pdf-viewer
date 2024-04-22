@@ -1,16 +1,16 @@
 import { useState, useMemo, useEffect, useContext, Fragment, createElement } from "react";
-import Icon from "../../../Icon";
-import Spinner from "../../../Spinner";
-import LocalizationContext from "../../../LocalizationContext";
-import ThemeContext from "../../../ThemeContext";
+import Icon from "../../../components/Icon";
+import Spinner from "../../../components/Spinner";
+import LocalizationContext from "../../../context/LocalizationContext";
+import ThemeContext from "../../../context/ThemeContext";
 import { TextDirection } from "../../../enums";
-import Tooltip from "../../../Tooltip";
+import Tooltip from "../../../components/Tooltip";
 import { Position } from "../../../enums";
-import MinimalButton from "../../../MinimalButton";
-import Modal from "../../../Modal";
-import MenuItem from "../../../MenuItem";
+import MinimalButton from "../../../components/MinimalButton";
+import Modal from "../../../components/Modal";
+import MenuItem from "../../../components/MenuItem";
 import { createStore } from "../../../utils";
-import Button from "../../../Button";
+import Button from "../../../components/Button";
 
 const Separator = function () {
   return <div className="rpv-core__separator"></div>;

@@ -1,11 +1,11 @@
 import { useMemo, useRef, useEffect, useContext, Fragment, createElement } from "react";
-import Icon from "../../../Icon";
-import LocalizationContext from "../../../LocalizationContext";
+import Icon from "../../../components/Icon";
+import LocalizationContext from "../../../context/LocalizationContext";
 import { Position } from "../../../enums";
 import { isMac, createStore } from "../../../utils";
-import Tooltip from "../../../Tooltip";
-import MinimalButton from "../../../MinimalButton";
-import MenuItem from "../../../MenuItem";
+import Tooltip from "../../../components/Tooltip";
+import MinimalButton from "../../../components/MinimalButton";
+import MenuItem from "../../../components/MenuItem";
 
 var OpenFileIcon = function () {
   return createElement(Icon, { size: 16 }, createElement("path", { d: "M18.5,7.5c.275,0,.341-.159.146-.354L12.354.854a.5.5,0,0,0-.708,0L5.354,7.147c-.2.195-.129.354.146.354h3v10a1,1,0,0,0,1,1h5a1,1,0,0,0,1-1V7.5Z" }), createElement("path", { d: "M23.5,18.5v4a1,1,0,0,1-1,1H1.5a1,1,0,0,1-1-1v-4" }));

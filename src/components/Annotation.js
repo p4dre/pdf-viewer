@@ -1,5 +1,5 @@
 import { createElement, Fragment } from "react";
-import useTogglePopup from "./hooks/useTogglePopup";
+import useTogglePopup from "../hooks/useTogglePopup";
 import PopupWrapper from "./PopupWrapper";
 var AnnotationBorderStyleType;
 (function (AnnotationBorderStyleType) {

@@ -1,18 +1,18 @@
 import { useState, useMemo, useRef, useCallback, useLayoutEffect, useEffect, useContext, Fragment, createElement } from "react";
-import ThemeContext from "./ThemeContext";
-import LocalizationContext from "./LocalizationContext";
-import PageLayer from "./PageLayer";
-import useDestination from "./hooks/useDestination";
-import usePrevious from "./hooks/usePrevious";
-import useOutlines from "./hooks/useOutlines";
-import useFullScreen from "./hooks/useFullScreen";
-import useRenderQueue from "./hooks/useRenderQueue";
-import useVirtual from "./hooks/useVirtual";
-import useDebounceCallback from "./hooks/useDebounceCallback";
-import useTrackResize from "./hooks/useTrackResize";
-import useRunOnce from "./hooks/useRunOnce";
-import { FullScreenMode, ScrollMode, SpecialZoomLevel, RotateDirection, ViewMode, TextDirection } from "./enums";
-import { chunk, calculateScale, getPage } from "./utils";
+import ThemeContext from "../context/ThemeContext";
+import LocalizationContext from "../context/LocalizationContext";
+import PageLayer from "../Layers/PageLayer";
+import useDestination from "../hooks/useDestination";
+import usePrevious from "../hooks/usePrevious";
+import useOutlines from "../hooks/useOutlines";
+import useFullScreen from "../hooks/useFullScreen";
+import useRenderQueue from "../hooks/useRenderQueue";
+import useVirtual from "../hooks/useVirtual";
+import useDebounceCallback from "../hooks/useDebounceCallback";
+import useTrackResize from "../hooks/useTrackResize";
+import useRunOnce from "../hooks/useRunOnce";
+import { FullScreenMode, ScrollMode, SpecialZoomLevel, RotateDirection, ViewMode, TextDirection } from "../enums";
+import { chunk, calculateScale, getPage } from "../utils";
 
 var ZERO_OFFSET = {
   left: 0,

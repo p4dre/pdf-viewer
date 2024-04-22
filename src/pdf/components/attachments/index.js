@@ -1,8 +1,8 @@
 "use strict";
 import { useState, useEffect, useLayoutEffect, useMemo, useRef, useContext, createElement } from "react";
-import LocalizationContext from "../../../LocalizationContext";
-import ThemeContext from "../../../ThemeContext";
-import Spinner from "../../../Spinner";
+import LocalizationContext from "../../../context/LocalizationContext";
+import ThemeContext from "../../../context/ThemeContext";
+import Spinner from "../../../components/Spinner";
 import { createStore } from "../../../utils";
 import { TextDirection } from "../../../enums";
 var getFileName = function (url) {

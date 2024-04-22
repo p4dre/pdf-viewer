@@ -1,10 +1,10 @@
 import { useState, useEffect, useContext, useMemo, Fragment, useRef, createElement } from "react";
 import * as main from "../../../main";
-import Icon from "../../../Icon";
+import Icon from "../../../components/Icon";
 import { getDestination } from "../../../utils";
-import LocalizationContext from "../../../LocalizationContext";
-import ThemeContext from "../../../ThemeContext";
-import Spinner from "../../../Spinner";
+import LocalizationContext from "../../../context/LocalizationContext";
+import ThemeContext from "../../../context/ThemeContext";
+import Spinner from "../../../components/Spinner";
 import { TextDirection } from "../../../enums";
 import { createStore } from "../../../utils";
 

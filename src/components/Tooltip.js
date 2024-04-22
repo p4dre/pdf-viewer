@@ -1,11 +1,11 @@
 import { useRef, useContext, useMemo, createElement, Fragment } from "react";
-import useToggle from "./hooks/useToggle";
-import ThemeContext from "./ThemeContext";
-import { TextDirection, ToggleStatus } from "./enums";
-import usePosition from "./hooks/usePosition";
+import useToggle from "../hooks/useToggle";
+import ThemeContext from "../context/ThemeContext";
+import { TextDirection, ToggleStatus } from "../enums";
+import usePosition from "../hooks/usePosition";
 import Arrow from "./Arrow";
-import { uniqueId } from "./utils";
-import useEscape from "./hooks/useEscape";
+import { uniqueId } from "../utils";
+import useEscape from "../hooks/useEscape";
 
 const TooltipBody = function (props) {
   const { ariaControlsSuffix, children, contentRef, offset, position, targetRef } = props;

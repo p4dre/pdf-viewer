@@ -1,16 +1,16 @@
 import { useState, useEffect, useRef, useMemo, createElement, useContext, Fragment } from "react";
 import { createPortal } from "react-dom";
-import Icon from "../../../Icon";
-import LocalizationContext from "../../../LocalizationContext";
-import ThemeContext from "../../../ThemeContext";
+import Icon from "../../../components/Icon";
+import LocalizationContext from "../../../context/LocalizationContext";
+import ThemeContext from "../../../context/ThemeContext";
 import { isMac, createStore, getPage } from "../../../utils";
-import Tooltip from "../../../Tooltip";
+import Tooltip from "../../../components/Tooltip";
 import { Position, TextDirection } from "../../../enums";
-import MinimalButton from "../../../MinimalButton";
-import MenuItem from "../../../MenuItem";
+import MinimalButton from "../../../components/MinimalButton";
+import MenuItem from "../../../components/MenuItem";
 import useIsMounted from "../../../hooks/useIsMounted";
-import Modal from "../../../Modal";
-import Button from "../../../Button";
+import Modal from "../../../components/Modal";
+import Button from "../../../components/Button";
 
 import * as main from "../../../main";
 

@@ -1,6 +1,6 @@
 import { useRef, useContext, useLayoutEffect } from "react";
-import ThemeContext from "./ThemeContext";
-import { TextDirection } from "./enums";
+import ThemeContext from "../context/ThemeContext";
+import { TextDirection } from "../enums";
 
 const Menu = (_a) => {
   var children = _a.children;

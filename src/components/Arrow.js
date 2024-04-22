@@ -1,4 +1,4 @@
-import { Position } from "./enums";
+import { Position } from "../enums";
 
 const Arrow = (props) => {
   const { customClassName, position } = props;

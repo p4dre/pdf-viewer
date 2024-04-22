@@ -1,12 +1,12 @@
 import { useState, useMemo, createElement, useContext, Fragment, useRef, useEffect, useLayoutEffect } from "react";
-import Icon from "../../../Icon";
-import LocalizationContext from "../../../LocalizationContext";
-import TextBox from "../../../TextBox";
+import Icon from "../../../components/Icon";
+import LocalizationContext from "../../../context/LocalizationContext";
+import TextBox from "../../../components/TextBox";
 import useIsMounted from "../../../hooks/useIsMounted";
-import Tooltip from "../../../Tooltip";
+import Tooltip from "../../../components/Tooltip";
 import { Position } from "../../../enums";
-import MinimalButton from "../../../MinimalButton";
-import MenuItem from "../../../MenuItem";
+import MinimalButton from "../../../components/MinimalButton";
+import MenuItem from "../../../components/MenuItem";
 import { isMac, createStore } from "../../../utils";
 
 var DownArrowIcon = function () {

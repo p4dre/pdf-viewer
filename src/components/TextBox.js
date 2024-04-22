@@ -1,5 +1,5 @@
 import { useRef, useContext, useEffect, useLayoutEffect } from "react";
-import ThemeContext from "./ThemeContext";
+import ThemeContext from "../context/ThemeContext";
 
 let TextDirection;
 (function (TextDirection) {

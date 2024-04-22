@@ -1,15 +1,15 @@
 import { useState, useEffect, useLayoutEffect, useMemo, Fragment, useContext, createElement } from "react";
-import Icon from "../../../Icon";
+import Icon from "../../../components/Icon";
 import useDebounceCallback from "../../../hooks/useDebounceCallback";
-import LocalizationContext from "../../../LocalizationContext";
-import ThemeContext from "../../../ThemeContext";
+import LocalizationContext from "../../../context/LocalizationContext";
+import ThemeContext from "../../../context/ThemeContext";
 import { isMac, createStore } from "../../../utils";
 import { SpecialZoomLevel, TextDirection, Position } from "../../../enums";
-import MinimalButton from "../../../MinimalButton";
-import MenuItem from "../../../MenuItem";
-import Tooltip from "../../../Tooltip";
-import Menu from "../../../Menu";
-import Popover from "../../../Popover";
+import MinimalButton from "../../../components/MinimalButton";
+import MenuItem from "../../../components/MenuItem";
+import Tooltip from "../../../components/Tooltip";
+import Menu from "../../../components/Menu";
+import Popover from "../../../components/Popover";
 
 const MenuDivider = function () {
   return <div ariaOrientation="horizontal" role="separator" className="rpv-core__menu-divider"></div>;

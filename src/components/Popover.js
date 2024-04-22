@@ -1,12 +1,12 @@
 import { useRef, useContext, useMemo, useLayoutEffect } from "react";
-import ThemeContext from "./ThemeContext";
-import usePosition from "./hooks/usePosition";
-import useEscape from "./hooks/useEscape";
-import useClickOutside from "./hooks/useClickOutside";
-import { uniqueId } from "./utils";
-import { TextDirection } from "./enums";
+import ThemeContext from "../context/ThemeContext";
+import usePosition from "../hooks/usePosition";
+import useEscape from "../hooks/useEscape";
+import useClickOutside from "../hooks/useClickOutside";
+import { uniqueId } from "../utils";
+import { TextDirection } from "../enums";
 import Arrow from "./Arrow";
-import useToggle from "./hooks/useToggle";
+import useToggle from "../hooks/useToggle";
 
 var PopoverBody = function (_a) {
   var ariaControlsSuffix = _a.ariaControlsSuffix,
@@ -37,7 +37,7 @@ var PopoverBody = function (_a) {
   var innerId = "rpv-core__popover-body-inner-".concat(ariaControlsSuffix);
   return (
     <>
-      <div ref={anchorRef} style={{ left: 0, position: "position", top: 0 }}></div>
+      <div ref={anchorRef} style={{ left: 0, position: "absolute", top: 0 }}></div>
       <div ref={contentRef} role="dialog" tabIndex={-1} aria-describedby={innerId} id={`rpv-core__popover-body-${ariaControlsSuffix}`} className={`rpv-core__popover-body ${isRtl ? "rpv-core__popover-body--rtl" : ""}`}>
         <Arrow customClassName="rpv-core__popover-body-arrow" position={position} />
         <div id={innerId} ref={innerRef}>

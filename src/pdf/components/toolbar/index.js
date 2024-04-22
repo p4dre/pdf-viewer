@@ -11,16 +11,16 @@ import * as scrollMode from "../scroll-mode";
 import * as search from "../search";
 import * as theme from "../theme";
 import * as zoom from "../zoom";
-import Icon from "../../../Icon";
-import LocalizationContext from "../../../LocalizationContext";
-import ThemeContext from "../../../ThemeContext";
+import Icon from "../../../components/Icon";
+import LocalizationContext from "../../../context/LocalizationContext";
+import ThemeContext from "../../../context/ThemeContext";
 import { TextDirection } from "../../../enums";
 import { Position } from "../../../enums";
-import Tooltip from "../../../Tooltip";
-import MinimalButton from "../../../MinimalButton";
-import Menu from "../../../Menu";
+import Tooltip from "../../../components/Tooltip";
+import MinimalButton from "../../../components/MinimalButton";
+import Menu from "../../../components/Menu";
 import { ScrollMode, ViewMode } from "../../../enums";
-import Popover from "../../../Popover";
+import Popover from "../../../components/Popover";
 
 const MenuDivider = function () {
   return <div ariaOrientation="horizontal" className="rpv-core__menu-divider" role="separator"></div>;

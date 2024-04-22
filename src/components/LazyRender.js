@@ -1,5 +1,5 @@
 import { useState } from "react";
-import useIntersectionObserver from "./hooks/useIntersectionObserver";
+import useIntersectionObserver from "../hooks/useIntersectionObserver";
 
 const LazyRender = (props) => {
   const { attrs, children } = props;

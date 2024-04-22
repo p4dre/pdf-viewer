@@ -1,10 +1,10 @@
 import { useState, useMemo, useContext, useEffect, createElement } from "react";
-import Icon from "../../../Icon";
-import LocalizationContext from "../../../LocalizationContext";
-import Tooltip from "../../../Tooltip";
+import Icon from "../../../components/Icon";
+import LocalizationContext from "../../../context/LocalizationContext";
+import Tooltip from "../../../components/Tooltip";
 import { Position } from "../../../enums";
-import MinimalButton from "../../../MinimalButton";
-import MenuItem from "../../../MenuItem";
+import MinimalButton from "../../../components/MinimalButton";
+import MenuItem from "../../../components/MenuItem";
 import { createStore } from "../../../utils";
 
 var DownloadIcon = function () {

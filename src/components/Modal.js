@@ -1,11 +1,11 @@
 import { useRef, useContext, useLayoutEffect } from "react";
-import useToggle from "./hooks/useToggle";
-import ThemeContext from "./ThemeContext";
-import { TextDirection } from "./enums";
-import useLockScroll from "./hooks/useLockScroll";
-import useEscape from "./hooks/useEscape";
-import useClickOutside from "./hooks/useClickOutside";
-import { uniqueId } from "./utils";
+import useToggle from "../hooks/useToggle";
+import ThemeContext from "../context/ThemeContext";
+import { TextDirection } from "../enums";
+import useLockScroll from "../hooks/useLockScroll";
+import useEscape from "../hooks/useEscape";
+import useClickOutside from "../hooks/useClickOutside";
+import { uniqueId } from "../utils";
 
 const Portal = (props) => {
   const { content, isOpened = false, target } = props;

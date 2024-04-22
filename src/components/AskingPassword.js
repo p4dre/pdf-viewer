@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from "react";
-import LocalizationContext from "./LocalizationContext";
-import ThemeContext from "./ThemeContext";
+import LocalizationContext from "../context/LocalizationContext";
+import ThemeContext from "../context/ThemeContext";
 import TextBox from "./TextBox";
 import PrimaryButton from "./PrimaryButton";
 

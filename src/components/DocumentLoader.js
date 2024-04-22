@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef, useContext } from "react";
 import * as PdfJsApi from "pdfjs-dist/build/pdf";
-import ThemeContext from "./ThemeContext";
-import useIsMounted from "./hooks/useIsMounted";
+import ThemeContext from "../context/ThemeContext";
+import useIsMounted from "../hooks/useIsMounted";
 import AskingPassword from "./AskingPassword";
 import Spinner from "./Spinner";
-import { PasswordStatus, TextDirection } from "./enums";
+import { PasswordStatus, TextDirection } from "../enums";
 
 var extendStatics = function (d, b) {
   extendStatics =

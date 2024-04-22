@@ -1,6 +1,6 @@
 import { useContext } from "react";
-import ThemeContext from "./ThemeContext";
-import { TextDirection } from "./enums";
+import ThemeContext from "../context/ThemeContext";
+import { TextDirection } from "../enums";
 import CheckIcon from "./CheckIcon";
 const MenuItem = function (props) {
   const { checked = false, children, icon = null, isDisabled = false, testId, onClick = () => {} } = props;

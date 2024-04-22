@@ -1,9 +1,9 @@
 import { useState, useContext, useRef, useEffect, Fragment, useMemo, createElement } from "react";
-import Icon from "../../../Icon";
-import LocalizationContext from "../../../LocalizationContext";
-import MinimalButton from "../../../MinimalButton";
-import Tooltip from "../../../Tooltip";
-import MenuItem from "../../../MenuItem";
+import Icon from "../../../components/Icon";
+import LocalizationContext from "../../../context/LocalizationContext";
+import MinimalButton from "../../../components/MinimalButton";
+import Tooltip from "../../../components/Tooltip";
+import MenuItem from "../../../components/MenuItem";
 import { createStore } from "../../../utils";
 import { Position } from "../../../enums";
 

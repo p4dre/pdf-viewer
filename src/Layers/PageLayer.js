@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect, Fragment } from "react";
-import Spinner from "./Spinner";
-import AnnotationLayer from "./AnnotationLayer";
+import Spinner from "../components/Spinner";
+import AnnotationLayer from "../components/AnnotationLayer";
 import CanvasLayer from "./CanvasLayer";
 import SvgLayer from "./SvgLayer";
 import TextLayer from "./TextLayer";
-import useIsMounted from "./hooks/useIsMounted";
+import useIsMounted from "../hooks/useIsMounted";
 
 let ViewMode;
 (function (ViewMode) {

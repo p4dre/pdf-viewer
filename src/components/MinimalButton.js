@@ -1,6 +1,6 @@
 import { useContext } from "react";
-import ThemeContext from "./ThemeContext";
-import { TextDirection } from "./enums";
+import ThemeContext from "../context/ThemeContext";
+import { TextDirection } from "../enums";
 
 const MinimalButton = function (props) {
   const { ariaLabel = "", ariaKeyShortcuts = "", isDisabled = false, isSelected = false, testId, onClick = () => {}, children } = props;

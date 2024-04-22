@@ -1,11 +1,11 @@
 import { useContext, createElement } from "react";
-import Icon from "../../../Icon";
-import ThemeContext from "../../../ThemeContext";
-import LocalizationContext from "../../../LocalizationContext";
-import Tooltip from "../../../Tooltip";
+import Icon from "../../../components/Icon";
+import ThemeContext from "../../../context/ThemeContext";
+import LocalizationContext from "../../../context/LocalizationContext";
+import Tooltip from "../../../components/Tooltip";
 import { Position } from "../../../enums";
-import MinimalButton from "../../../MinimalButton";
-import MenuItem from "../../../MenuItem";
+import MinimalButton from "../../../components/MinimalButton";
+import MenuItem from "../../../components/MenuItem";
 
 var DarkIcon = function () {
   return createElement(
