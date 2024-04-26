@@ -8,7 +8,7 @@ function App() {
   return (
     <div className="App">
       <div style={{ height: "100vh" }}>
-        <Player fileUrl="./demo.pdf" plugins={[options]} options={_options} />
+        <Player fileUrl="./demo.pdf" />
       </div>
     </div>
   );

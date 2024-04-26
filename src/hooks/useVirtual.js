@@ -1,28 +1,11 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import useScroll from "./useScroll";
 import useMeasureRect from "./useMeasureRect";
-var COMPARE_EPSILON = 0.000000000001;
+import { chunk } from "../utils";
+import { ScrollMode, ViewMode, ScrollDirection } from "../enums";
+const COMPARE_EPSILON = 0.000000000001;
 
-var chunk = function (arr, size) {
-  return arr.reduce(function (acc, e, i) {
-    return i % size ? acc[acc.length - 1].push(e) : acc.push([e]), acc;
-  }, []);
-};
-
-var __assign = function () {
-  __assign =
-    Object.assign ||
-    function __assign(t) {
-      for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
-      }
-      return t;
-    };
-  return __assign.apply(this, arguments);
-};
-
-var buildContainerStyles = function (totalSize, scrollMode) {
+const buildContainerStyles = function (totalSize, scrollMode) {
   switch (scrollMode) {
     case ScrollMode.Horizontal:
       return {
@@ -40,7 +23,7 @@ var buildContainerStyles = function (totalSize, scrollMode) {
   }
 };
 
-var buildItemContainerStyles = function (item, parentRect, scrollMode) {
+const buildItemContainerStyles = function (item, parentRect, scrollMode) {
   return scrollMode !== ScrollMode.Page
     ? {}
     : {
@@ -52,53 +35,51 @@ var buildItemContainerStyles = function (item, parentRect, scrollMode) {
       };
 };
 
-var buildItemStyles = function (item, isRtl, sizes, viewMode, scrollMode) {
-  var _a, _b, _c, _d, _e, _f, _g;
-  var sideProperty = isRtl ? "right" : "left";
-  var factor = isRtl ? -1 : 1;
-  var numberOfItems = sizes.length;
-  var left = item.start.left * factor;
-  var _h = item.size,
-    height = _h.height,
-    width = _h.width;
+const buildItemStyles = function (item, isRtl, sizes, viewMode, scrollMode) {
+  let _a, _b, _c, _d, _e, _f, _g;
+  const sideProperty = isRtl ? "right" : "left";
+  const factor = isRtl ? -1 : 1;
+  const numberOfItems = sizes.length;
+  const left = item.start.left * factor;
+  const { height, width } = item.size;
   if (viewMode === ViewMode.DualPageWithCover) {
-    var transformTop = scrollMode === ScrollMode.Page ? 0 : item.start.top;
+    const transformTop = scrollMode === ScrollMode.Page ? 0 : item.start.top;
     if (item.index === 0 || (numberOfItems % 2 === 0 && item.index === numberOfItems - 1)) {
       return (
         (_a = {
-          height: "".concat(height, "px"),
-          minWidth: "".concat(getMinWidthOfCover(sizes, viewMode), "px"),
+          height: `${height}px`,
+          minWidth: `${getMinWidthOfCover(sizes, viewMode)}px`,
           width: "100%",
         }),
         (_a[sideProperty] = 0),
         (_a.position = "absolute"),
         (_a.top = 0),
-        (_a.transform = "translate(".concat(left, "px, ").concat(transformTop, "px)")),
+        (_a.transform = `translate(${left}px, ${transformTop}px)`),
         _a
       );
     }
     return (
       (_b = {
-        height: "".concat(height, "px"),
-        width: "".concat(width, "px"),
+        height: `${height}px`,
+        width: `${width}px`,
       }),
       (_b[sideProperty] = 0),
       (_b.position = "absolute"),
       (_b.top = 0),
-      (_b.transform = "translate(".concat(left, "px, ").concat(transformTop, "px)")),
+      (_b.transform = `translate(${left}px, ${transformTop}px)`),
       _b
     );
   }
   if (viewMode === ViewMode.DualPage) {
     return (
       (_c = {
-        height: "".concat(height, "px"),
-        width: "".concat(width, "px"),
+        height: `${height}px`,
+        width: `${width}px`,
       }),
       (_c[sideProperty] = 0),
       (_c.position = "absolute"),
       (_c.top = 0),
-      (_c.transform = "translate(".concat(left, "px, ").concat(scrollMode === ScrollMode.Page ? 0 : item.start.top, "px)")),
+      (_c.transform = `translate(${left}px, ${scrollMode === ScrollMode.Pge ? 0 : item.start.top}px)`),
       _c
     );
   }
@@ -154,8 +135,8 @@ var buildItemStyles = function (item, isRtl, sizes, viewMode, scrollMode) {
   }
 };
 
-var hasDifferentSizes = function (sizes) {
-  var numberOfItems = sizes.length;
+const hasDifferentSizes = (sizes) => {
+  const numberOfItems = sizes.length;
   if (numberOfItems === 1) {
     return false;
   }
@@ -167,72 +148,55 @@ var hasDifferentSizes = function (sizes) {
   return false;
 };
 
-var getMinWidthOfCover = function (sizes, viewMode) {
+const getMinWidthOfCover = (sizes, viewMode) => {
   if (viewMode !== ViewMode.DualPageWithCover) {
     return 0;
   }
   if (!hasDifferentSizes(sizes)) {
     return 2 * sizes[0].width;
   }
-  var chunkWidths = chunk(sizes.slice(1), 2).map(function (eachChunk) {
+  const chunkWidths = chunk(sizes.slice(1), 2).map((eachChunk) => {
     return eachChunk.length === 2 ? eachChunk[0].width + eachChunk[1].width : eachChunk[0].width;
   });
-  var widths = [sizes[0].width].concat(chunkWidths);
+  const widths = [sizes[0].width].concat(chunkWidths);
   return Math.max.apply(Math, widths);
 };
 
-var VIRTUAL_INDEX_ATTR = "data-virtual-index";
-var IO_THRESHOLD = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
-var ZERO_OFFSET$1 = {
+const VIRTUAL_INDEX_ATTR = "data-virtual-index";
+const IO_THRESHOLD = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+const ZERO_OFFSET$1 = {
   left: 0,
   top: 0,
 };
 
-var ZERO_OFFSET$2 = {
+const ZERO_OFFSET$2 = {
   left: 0,
   top: 0,
 };
 
-var ZERO_OFFSET$3 = {
+const ZERO_OFFSET$3 = {
   left: 0,
   top: 0,
 };
 
-function __spreadArray(to, from, pack) {
-  if (pack || arguments.length === 2)
-    for (var i = 0, l = from.length, ar; i < l; i++) {
-      if (ar || !(i in from)) {
-        if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-        ar[i] = from[i];
-      }
-    }
-  return to.concat(ar || Array.prototype.slice.call(from));
-}
-
-var ZERO_OFFSET$5 = {
+const ZERO_OFFSET$5 = {
   left: 0,
   top: 0,
 };
 
-var ZERO_RECT$2 = {
+const ZERO_RECT$2 = {
   height: 0,
   width: 0,
 };
 
-var clamp = function (min, max, value) {
-  return Math.max(min, Math.min(value, max));
-};
+const clamp = (min, max, value) => Math.max(min, Math.min(value, max));
 
-var indexOfMax = function (arr) {
-  return arr.reduce(function (prev, curr, i, a) {
-    return curr > a[prev] ? i : prev;
-  }, 0);
-};
+const indexOfMax = (arr) => arr.reduce((prev, curr, i, a) => (curr > a[prev] ? i : prev), 0);
 
-var findNearest = function (low, high, value, getItemValue) {
+const findNearest = (low, high, value, getItemValue) => {
   while (low <= high) {
-    var middle = ((low + high) / 2) | 0;
-    var currentValue = getItemValue(middle);
+    const middle = ((low + high) / 2) | 0;
+    const currentValue = getItemValue(middle);
     if (currentValue < value) {
       low = middle + 1;
     } else if (currentValue > value) {
@@ -244,8 +208,8 @@ var findNearest = function (low, high, value, getItemValue) {
   return low > 0 ? low - 1 : 0;
 };
 
-var calculateRange = function (scrollDirection, measurements, outerSize, scrollOffset) {
-  var currentOffset = 0;
+const calculateRange = (scrollDirection, measurements, outerSize, scrollOffset) => {
+  let currentOffset = 0;
   switch (scrollDirection) {
     case ScrollDirection.Horizontal:
       currentOffset = scrollOffset.left;
@@ -255,8 +219,8 @@ var calculateRange = function (scrollDirection, measurements, outerSize, scrollO
       currentOffset = scrollOffset.top;
       break;
   }
-  var size = measurements.length - 1;
-  var getOffset = function (index) {
+  const size = measurements.length - 1;
+  const getOffset = (index) => {
     switch (scrollDirection) {
       case ScrollDirection.Horizontal:
         return measurements[index].start.left;
@@ -266,20 +230,20 @@ var calculateRange = function (scrollDirection, measurements, outerSize, scrollO
         return measurements[index].start.top;
     }
   };
-  var start = findNearest(0, size, currentOffset, getOffset);
+  const start = findNearest(0, size, currentOffset, getOffset);
   if (scrollDirection === ScrollDirection.Both) {
-    var startTop = measurements[start].start.top;
+    const startTop = measurements[start].start.top;
     while (start - 1 >= 0 && measurements[start - 1].start.top === startTop && measurements[start - 1].start.left >= scrollOffset.left) {
       start--;
     }
   }
-  var end = start;
+  let end = start;
   while (end <= size) {
-    var topLeftCorner = {
+    const topLeftCorner = {
       top: measurements[end].start.top - scrollOffset.top,
       left: measurements[end].start.left - scrollOffset.left,
     };
-    var visibleSize = {
+    const visibleSize = {
       height: outerSize.height - topLeftCorner.top,
       width: outerSize.width - topLeftCorner.left,
     };
@@ -300,17 +264,17 @@ var calculateRange = function (scrollDirection, measurements, outerSize, scrollO
   };
 };
 
-var measure = function (numberOfItems, parentRect, sizes, scrollMode) {
-  var measurements = [];
-  var totalWidth = 0;
-  var firstOfRow = {
+const measure = (numberOfItems, parentRect, sizes, scrollMode) => {
+  const measurements = [];
+  let totalWidth = 0;
+  let firstOfRow = {
     left: 0,
     top: 0,
   };
-  var maxHeight = 0;
-  var start = ZERO_OFFSET$5;
-  for (var i = 0; i < numberOfItems; i++) {
-    var size = sizes[i];
+  let maxHeight = 0;
+  let start = ZERO_OFFSET$5;
+  for (let i = 0; i < numberOfItems; i++) {
+    const size = sizes[i];
     if (i === 0) {
       totalWidth = size.width;
       firstOfRow = {
@@ -348,7 +312,7 @@ var measure = function (numberOfItems, parentRect, sizes, scrollMode) {
           break;
       }
     }
-    var end = {
+    const end = {
       left: start.left + size.width,
       top: start.top + size.height,
     };
@@ -363,11 +327,11 @@ var measure = function (numberOfItems, parentRect, sizes, scrollMode) {
   return measurements;
 };
 
-var ZERO_OFFSET$4 = {
+const ZERO_OFFSET$4 = {
   left: 0,
   top: 0,
 };
-var measureDualPage = function (numberOfItems, parentRect, sizes, scrollMode) {
+const measureDualPage = function (numberOfItems, parentRect, sizes, scrollMode) {
   var measurements = [];
   var top = 0;
   var maxHeight = 0;
@@ -412,7 +376,7 @@ var measureDualPage = function (numberOfItems, parentRect, sizes, scrollMode) {
   return measurements;
 };
 
-var measureDualPageWithCover = function (numberOfItems, parentRect, sizes, scrollMode) {
+const measureDualPageWithCover = function (numberOfItems, parentRect, sizes, scrollMode) {
   var measurements = [];
   var top = 0;
   var maxHeight = 0;
@@ -470,29 +434,7 @@ var measureDualPageWithCover = function (numberOfItems, parentRect, sizes, scrol
   return measurements;
 };
 
-let ScrollMode;
-(function (ScrollMode) {
-  ScrollMode["Page"] = "Page";
-  ScrollMode["Horizontal"] = "Horizontal";
-  ScrollMode["Vertical"] = "Vertical";
-  ScrollMode["Wrapped"] = "Wrapped";
-})(ScrollMode || (ScrollMode = {}));
-
-let ViewMode;
-(function (ViewMode) {
-  ViewMode["DualPage"] = "DualPage";
-  ViewMode["DualPageWithCover"] = "DualPageWithCover";
-  ViewMode["SinglePage"] = "SinglePage";
-})(ViewMode || (ViewMode = {}));
-
-var ScrollDirection;
-(function (ScrollDirection) {
-  ScrollDirection["Horizontal"] = "Horizontal";
-  ScrollDirection["Vertical"] = "Vertical";
-  ScrollDirection["Both"] = "Both";
-})(ScrollDirection || (ScrollDirection = {}));
-
-var measureSinglePage = function (numberOfItems, parentRect, sizes) {
+const measureSinglePage = function (numberOfItems, parentRect, sizes) {
   var measurements = [];
   for (var i = 0; i < numberOfItems; i++) {
     var size = {
@@ -521,49 +463,43 @@ const useVirtual = function (props) {
   const onSmoothScroll = useCallback((isSmoothScrolling) => {
     return setSmoothScrolling(isSmoothScrolling);
   }, []);
-  var scrollModeRef = useRef(scrollMode);
+  const scrollModeRef = useRef(scrollMode);
   scrollModeRef.current = scrollMode;
-  var viewModeRef = useRef(viewMode);
+  const viewModeRef = useRef(viewMode);
   viewModeRef.current = viewMode;
-  var scrollDirection = scrollMode === ScrollMode.Wrapped || viewMode === ViewMode.DualPageWithCover || viewMode === ViewMode.DualPage ? ScrollDirection.Both : scrollMode === ScrollMode.Horizontal ? ScrollDirection.Horizontal : ScrollDirection.Vertical;
-  var _c = useScroll({
-      elementRef: parentRef,
-      enableSmoothScroll: enableSmoothScroll,
-      isRtl: isRtl,
-      scrollDirection: scrollDirection,
-      onSmoothScroll: onSmoothScroll,
-    }),
-    scrollOffset = _c.scrollOffset,
-    scrollTo = _c.scrollTo;
-  var parentRect = useMeasureRect({
+  const scrollDirection = scrollMode === ScrollMode.Wrapped || viewMode === ViewMode.DualPageWithCover || viewMode === ViewMode.DualPage ? ScrollDirection.Both : scrollMode === ScrollMode.Horizontal ? ScrollDirection.Horizontal : ScrollDirection.Vertical;
+  const { scrollOffset, scrollTo } = useScroll({
+    elementRef: parentRef,
+    enableSmoothScroll: enableSmoothScroll,
+    isRtl: isRtl,
+    scrollDirection: scrollDirection,
+    onSmoothScroll: onSmoothScroll,
+  });
+  const parentRect = useMeasureRect({
     elementRef: parentRef,
   });
-  var latestRef = useRef({
+  const latestRef = useRef({
     scrollOffset: ZERO_OFFSET$1,
     measurements: [],
   });
   latestRef.current.scrollOffset = scrollOffset;
-  var defaultVisibilities = useMemo(function () {
-    return Array(numberOfItems).fill(-1);
-  }, []);
-  var _d = useState(defaultVisibilities),
-    visibilities = _d[0],
-    setVisibilities = _d[1];
-  var intersectionTracker = useMemo(function () {
-    var io = new IntersectionObserver(
-      function (entries) {
-        entries.forEach(function (entry) {
-          var ratio = entry.isIntersecting ? entry.intersectionRatio : -1;
-          var target = entry.target;
-          var indexAttribute = target.getAttribute(VIRTUAL_INDEX_ATTR);
+  const defaultVisibilities = useMemo(() => Array(numberOfItems).fill(-1), []);
+  const [visibilities, setVisibilities] = useState(defaultVisibilities);
+  const intersectionTracker = useMemo(() => {
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const ratio = entry.isIntersecting ? entry.intersectionRatio : -1;
+          const target = entry.target;
+          const indexAttribute = target.getAttribute(VIRTUAL_INDEX_ATTR);
           if (!indexAttribute) {
             return;
           }
-          var index = parseInt(indexAttribute, 10);
+          const index = parseInt(indexAttribute, 10);
           if (0 <= index && index < numberOfItems) {
-            setVisibilities(function (old) {
+            setVisibilities((old) => {
               old[index] = ratio;
-              return __spreadArray([], old, true);
+              return [...old];
             });
           }
         });
@@ -574,108 +510,95 @@ const useVirtual = function (props) {
     );
     return io;
   }, []);
-  var measurements = useMemo(
-    function () {
-      if (scrollMode === ScrollMode.Page && viewMode === ViewMode.SinglePage) {
-        return measureSinglePage(numberOfItems, parentRect, sizes);
-      }
-      if (viewMode === ViewMode.DualPageWithCover) {
-        return measureDualPageWithCover(numberOfItems, parentRect, sizes, scrollMode);
-      }
-      if (viewMode === ViewMode.DualPage) {
-        return measureDualPage(numberOfItems, parentRect, sizes, scrollMode);
-      }
-      return measure(numberOfItems, parentRect, sizes, scrollMode);
-    },
-    [scrollMode, sizes, viewMode, parentRect]
-  );
-  var totalSize = measurements[numberOfItems - 1]
+  const measurements = useMemo(() => {
+    if (scrollMode === ScrollMode.Page && viewMode === ViewMode.SinglePage) {
+      return measureSinglePage(numberOfItems, parentRect, sizes);
+    }
+    if (viewMode === ViewMode.DualPageWithCover) {
+      return measureDualPageWithCover(numberOfItems, parentRect, sizes, scrollMode);
+    }
+    if (viewMode === ViewMode.DualPage) {
+      return measureDualPage(numberOfItems, parentRect, sizes, scrollMode);
+    }
+    return measure(numberOfItems, parentRect, sizes, scrollMode);
+  }, [scrollMode, sizes, viewMode, parentRect]);
+  const totalSize = measurements[numberOfItems - 1]
     ? {
         height: measurements[numberOfItems - 1].end.top,
         width: measurements[numberOfItems - 1].end.left,
       }
     : ZERO_RECT$2;
   latestRef.current.measurements = measurements;
-  var _e = useMemo(
-      function () {
-        var _a = calculateRange(scrollDirection, measurements, parentRect, scrollOffset),
-          start = _a.start,
-          end = _a.end;
-        var visiblePageVisibilities = visibilities.slice(clamp(0, numberOfItems, start), clamp(0, numberOfItems, end));
-        var maxVisbilityItem = start + indexOfMax(visiblePageVisibilities);
-        maxVisbilityItem = clamp(0, numberOfItems - 1, maxVisbilityItem);
-        var maxVisbilityIndex = maxVisbilityItem;
-        var _b = setRenderRange({
-            endPage: end,
-            numPages: numberOfItems,
-            startPage: start,
-          }),
-          startPage = _b.startPage,
-          endPage = _b.endPage;
-        startPage = Math.max(startPage, 0);
-        endPage = Math.min(endPage, numberOfItems - 1);
-        switch (viewMode) {
-          case ViewMode.DualPageWithCover:
-            if (maxVisbilityItem > 0) {
-              maxVisbilityIndex = maxVisbilityItem % 2 === 1 ? maxVisbilityItem : maxVisbilityItem - 1;
-            }
-            startPage = startPage === 0 ? 0 : startPage % 2 === 1 ? startPage : startPage - 1;
-            endPage = endPage % 2 === 1 ? endPage - 1 : endPage;
-            if (numberOfItems - endPage <= 2) {
-              endPage = numberOfItems - 1;
-            }
-            break;
-          case ViewMode.DualPage:
-            maxVisbilityIndex = maxVisbilityItem % 2 === 0 ? maxVisbilityItem : maxVisbilityItem - 1;
-            startPage = startPage % 2 === 0 ? startPage : startPage - 1;
-            endPage = endPage % 2 === 1 ? endPage : endPage - 1;
-            break;
-          case ViewMode.SinglePage:
-          default:
-            maxVisbilityIndex = maxVisbilityItem;
-            break;
+  const _e = useMemo(() => {
+    const { start, end } = calculateRange(scrollDirection, measurements, parentRect, scrollOffset);
+    const visiblePageVisibilities = visibilities.slice(clamp(0, numberOfItems, start), clamp(0, numberOfItems, end));
+    let maxVisbilityItem = start + indexOfMax(visiblePageVisibilities);
+    maxVisbilityItem = clamp(0, numberOfItems - 1, maxVisbilityItem);
+    let maxVisbilityIndex = maxVisbilityItem;
+    let { startPage, endPage } = setRenderRange({
+      endPage: end,
+      numPages: numberOfItems,
+      startPage: start,
+    });
+    startPage = Math.max(startPage, 0);
+    endPage = Math.min(endPage, numberOfItems - 1);
+    switch (viewMode) {
+      case ViewMode.DualPageWithCover:
+        if (maxVisbilityItem > 0) {
+          maxVisbilityIndex = maxVisbilityItem % 2 === 1 ? maxVisbilityItem : maxVisbilityItem - 1;
         }
-        return {
-          startPage: startPage,
-          endPage: endPage,
-          maxVisbilityIndex: maxVisbilityIndex,
-        };
-      },
-      [measurements, parentRect, scrollOffset, viewMode, visibilities]
-    ),
-    startPage = _e.startPage,
-    endPage = _e.endPage,
-    maxVisbilityIndex = _e.maxVisbilityIndex;
-  var virtualItems = useMemo(
-    function () {
-      var virtualItems = [];
-      var _loop_1 = function (i) {
-        var item = measurements[i];
-        var virtualItem = __assign(__assign({}, item), {
-          visibility: visibilities[i] !== undefined ? visibilities[i] : -1,
-          measureRef: function (ele) {
-            if (!ele) {
-              return;
-            }
-            ele.setAttribute(VIRTUAL_INDEX_ATTR, "".concat(i));
-            intersectionTracker.observe(ele);
-          },
-        });
-        virtualItems.push(virtualItem);
+        startPage = startPage === 0 ? 0 : startPage % 2 === 1 ? startPage : startPage - 1;
+        endPage = endPage % 2 === 1 ? endPage - 1 : endPage;
+        if (numberOfItems - endPage <= 2) {
+          endPage = numberOfItems - 1;
+        }
+        break;
+      case ViewMode.DualPage:
+        maxVisbilityIndex = maxVisbilityItem % 2 === 0 ? maxVisbilityItem : maxVisbilityItem - 1;
+        startPage = startPage % 2 === 0 ? startPage : startPage - 1;
+        endPage = endPage % 2 === 1 ? endPage : endPage - 1;
+        break;
+      case ViewMode.SinglePage:
+      default:
+        maxVisbilityIndex = maxVisbilityItem;
+        break;
+    }
+    return {
+      startPage: startPage,
+      endPage: endPage,
+      maxVisbilityIndex: maxVisbilityIndex,
+    };
+  }, [measurements, parentRect, scrollOffset, viewMode, visibilities]);
+  const { startPage, endPage, maxVisbilityIndex } = _e;
+  const virtualItems = useMemo(() => {
+    const virtualItems = [];
+    const _loop_1 = (i) => {
+      var item = measurements[i];
+      const virtualItem = {
+        ...item,
+        visibility: visibilities[i] !== undefined ? visibilities[i] : -1,
+        measureRef: (ele) => {
+          if (!ele) {
+            return;
+          }
+          ele.setAttribute(VIRTUAL_INDEX_ATTR, `${i}`);
+          intersectionTracker.observe(ele);
+        },
       };
-      for (var i = startPage; i <= endPage; i++) {
-        _loop_1(i);
-      }
-      return virtualItems;
-    },
-    [startPage, endPage, visibilities, measurements]
-  );
-  var scrollToItem = useCallback(
-    function (index, offset) {
-      var measurements = latestRef.current.measurements;
-      var normalizedIndex = clamp(0, numberOfItems - 1, index);
-      var measurement = measurements[normalizedIndex];
-      var withOffset = scrollModeRef.current === ScrollMode.Page ? ZERO_OFFSET$1 : offset;
+
+      virtualItems.push(virtualItem);
+    };
+    for (let i = startPage; i <= endPage; i++) {
+      _loop_1(i);
+    }
+    return virtualItems;
+  }, [startPage, endPage, visibilities, measurements]);
+  const scrollToItem = useCallback(
+    (index, offset) => {
+      const measurements = latestRef.current.measurements;
+      const normalizedIndex = clamp(0, numberOfItems - 1, index);
+      const measurement = measurements[normalizedIndex];
+      const withOffset = scrollModeRef.current === ScrollMode.Page ? ZERO_OFFSET$1 : offset;
       return measurement
         ? scrollTo(
             {
@@ -688,16 +611,14 @@ const useVirtual = function (props) {
     },
     [scrollTo, enableSmoothScroll]
   );
-  var scrollToSmallestItemAbove = useCallback(function (index, offset) {
-    var measurements = latestRef.current.measurements;
-    var start = measurements[index].start;
-    var nextItem = measurements.find(function (item) {
-      return item.start.top - start.top > COMPARE_EPSILON;
-    });
+  const scrollToSmallestItemAbove = useCallback((index, offset) => {
+    const measurements = latestRef.current.measurements;
+    const start = measurements[index].start;
+    const nextItem = measurements.find((item) => item.start.top - start.top > COMPARE_EPSILON);
     if (!nextItem) {
       return Promise.resolve();
     }
-    var nextIndex = nextItem.index;
+    const nextIndex = nextItem.index;
     switch (viewModeRef.current) {
       case ViewMode.DualPage:
         nextIndex = nextIndex % 2 === 0 ? nextIndex : nextIndex + 1;
@@ -708,12 +629,12 @@ const useVirtual = function (props) {
     }
     return scrollToItem(nextIndex, offset);
   }, []);
-  var scrollToBiggestItemBelow = useCallback(function (index, offset) {
-    var measurements = latestRef.current.measurements;
-    var start = measurements[index].start;
-    var prevIndex = index;
-    var found = false;
-    for (var i = numberOfItems - 1; i >= 0; i--) {
+  const scrollToBiggestItemBelow = useCallback((index, offset) => {
+    const measurements = latestRef.current.measurements;
+    const start = measurements[index].start;
+    let prevIndex = index;
+    let found = false;
+    for (let i = numberOfItems - 1; i >= 0; i--) {
       if (start.top - measurements[i].start.top > COMPARE_EPSILON) {
         found = true;
         prevIndex = measurements[i].index;
@@ -736,7 +657,7 @@ const useVirtual = function (props) {
     }
     return scrollToItem(prevIndex, offset);
   }, []);
-  var scrollToNextItem = useCallback(function (index, offset) {
+  const scrollToNextItem = useCallback((index, offset) => {
     if (viewModeRef.current === ViewMode.DualPageWithCover || viewModeRef.current === ViewMode.DualPage) {
       return scrollToSmallestItemAbove(index, offset);
     }
@@ -749,7 +670,7 @@ const useVirtual = function (props) {
         return scrollToItem(index + 1, offset);
     }
   }, []);
-  var scrollToPreviousItem = useCallback(function (index, offset) {
+  const scrollToPreviousItem = useCallback(function (index, offset) {
     if (viewModeRef.current === ViewMode.DualPageWithCover || viewModeRef.current === ViewMode.DualPage) {
       return scrollToBiggestItemBelow(index, offset);
     }
@@ -762,32 +683,27 @@ const useVirtual = function (props) {
         return scrollToItem(index - 1, offset);
     }
   }, []);
-  var getContainerStyles = useCallback(
-    function () {
-      return buildContainerStyles(totalSize, scrollModeRef.current);
-    },
-    [totalSize]
-  );
-  var getItemContainerStyles = useCallback(
-    function (item) {
+  const getContainerStyles = useCallback(() => {
+    return buildContainerStyles(totalSize, scrollModeRef.current);
+  }, [totalSize]);
+  const getItemContainerStyles = useCallback(
+    (item) => {
       return buildItemContainerStyles(item, parentRect, scrollModeRef.current);
     },
     [parentRect]
   );
-  var getItemStyles = useCallback(
-    function (item) {
+  const getItemStyles = useCallback(
+    (item) => {
       return buildItemStyles(item, isRtl, sizes, viewModeRef.current, scrollModeRef.current);
     },
     [isRtl, sizes]
   );
-  var zoom = useCallback(function (scale, index) {
-    var _a = latestRef.current,
-      measurements = _a.measurements,
-      scrollOffset = _a.scrollOffset;
-    var normalizedIndex = clamp(0, numberOfItems - 1, index);
-    var measurement = measurements[normalizedIndex];
+  const zoom = useCallback((scale, index) => {
+    const { measurements, scrollOffset } = latestRef.current;
+    const normalizedIndex = clamp(0, numberOfItems - 1, index);
+    const measurement = measurements[normalizedIndex];
     if (measurement) {
-      var updateOffset =
+      const updateOffset =
         scrollModeRef.current === ScrollMode.Page
           ? {
               left: measurement.start.left,
@@ -801,8 +717,8 @@ const useVirtual = function (props) {
     }
     return Promise.resolve();
   }, []);
-  useEffect(function () {
-    return function () {
+  useEffect(() => {
+    return () => {
       intersectionTracker.disconnect();
     };
   }, []);

@@ -9,11 +9,17 @@ import { uniqueId } from "../utils";
 
 const Portal = (props) => {
   const { content, isOpened = false, target } = props;
-
+  const resul = useToggle(isOpened);
+  console.log("result ", resul);
   const [opened, toggle] = useToggle(isOpened);
+  const firstRender = target && target(toggle, opened);
+  console.log("firstRender ", firstRender);
+  const secondRender = opened && content(toggle);
+  console.log("secondRender ", secondRender);
   return (
     <>
-      {target && target(toggle, opened)} {opened && content(toggle)}
+      {target && target(toggle, opened)}
+      {opened && content(toggle)}
     </>
   );
 };

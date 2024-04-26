@@ -146,6 +146,10 @@ const Inner = (props) => {
         });
       });
   }, [rotation, scale]);
+  console.log("virtual Props ");
+  console.log("numPages ", numPages);
+  console.log("sizes ", sizes);
+  console.log("currentViewMode ", currentViewMode);
   const virtualizer = useVirtual({
     enableSmoothScroll: enableSmoothScroll,
     isRtl: isRtl,
@@ -714,15 +718,14 @@ const Inner = (props) => {
     [plugins, virtualizer]
   );
   var renderSlot = useCallback(function (slot) {
-    return createElement(
-      "div",
-      __assign({}, slot.attrs, {
-        style: slot.attrs && slot.attrs.style ? slot.attrs.style : {},
-      }),
-      slot.children,
-      slot.subSlot && renderSlot(slot.subSlot)
+    return (
+      <div style={slot.attrs?.style || {}} {...slot.attrs}>
+        {slot.children}
+        {slot.subSlot && renderSlot(slot.subSlot)}
+      </div>
     );
   }, []);
+
   return renderSlot(renderViewer());
 };
 
